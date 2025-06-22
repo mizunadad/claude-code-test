@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="美しいスマホ対応天気予報アプリ">
+    <meta name="theme-color" content="#4A90E2">
+    <title>Weather App</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="app-title">Weather App</h1>
+                <div class="header-buttons">
+                    <button id="theme-toggle" class="icon-btn" aria-label="テーマ切り替え">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                    <button id="settings-btn" class="icon-btn" aria-label="設定">
+                        <span>⚙️</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <div class="search-bar">
+                <input type="text" id="city-search" placeholder="都市名を入力..." autocomplete="off">
+                <button id="search-btn" class="search-button">🔍</button>
+            </div>
+            <button id="location-btn" class="location-button">📍 現在地</button>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>天気情報を取得中...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error" class="error-message hidden">
+            <p id="error-text"></p>
+            <button id="retry-btn" class="retry-button">再試行</button>
+        </div>
+
+        <!-- Main Weather Content -->
+        <main id="weather-content" class="weather-content hidden">
+            <!-- Current Weather -->
+            <section class="current-weather">
+                <div class="current-info">
+                    <div class="location">
+                        <h2 id="current-city">東京</h2>
+                        <button id="favorite-btn" class="favorite-btn" aria-label="お気に入りに追加">⭐</button>
+                    </div>
+                    <div class="current-temp">
+                        <span id="current-temperature">22°C</span>
+                        <div class="weather-icon">
+                            <img id="current-icon" src="" alt="天気アイコン">
+                        </div>
+                    </div>
+                    <div class="current-description">
+                        <p id="current-desc">晴れ</p>
+                        <p id="feels-like">体感温度: 25°C</p>
+                    </div>
+                </div>
+                
+                <div class="weather-details">
+                    <div class="detail-item">
+                        <span class="detail-label">湿度</span>
+                        <span id="humidity" class="detail-value">65%</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">風速</span>
+                        <span id="wind-speed" class="detail-value">3.2 m/s</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">気圧</span>
+                        <span id="pressure" class="detail-value">1013 hPa</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">視界</span>
+                        <span id="visibility" class="detail-value">10 km</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Navigation Tabs -->
+            <nav class="nav-tabs">
+                <button class="tab-btn active" data-tab="hourly">時間別</button>
+                <button class="tab-btn" data-tab="daily">5日間</button>
+                <button class="tab-btn" data-tab="favorites">お気に入り</button>
+            </nav>
+
+            <!-- Hourly Forecast -->
+            <section id="hourly-tab" class="tab-content active">
+                <div class="hourly-forecast">
+                    <div id="hourly-list" class="hourly-list">
+                        <!-- 時間別予報がここに動的に挿入される -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Daily Forecast -->
+            <section id="daily-tab" class="tab-content">
+                <div class="daily-forecast">
+                    <div id="daily-list" class="daily-list">
+                        <!-- 5日間予報がここに動的に挿入される -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Favorites -->
+            <section id="favorites-tab" class="tab-content">
+                <div class="favorites">
+                    <div id="favorites-list" class="favorites-list">
+                        <p class="no-favorites">お気に入りの都市がありません</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>設定</h3>
+                    <button id="close-settings" class="close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <label for="api-key">OpenWeatherMap API Key</label>
+                        <input type="password" id="api-key" placeholder="APIキーを入力してください">
+                        <small>APIキーは<a href="https://openweathermap.org/api" target="_blank" rel="noopener">OpenWeatherMap</a>から取得してください</small>
+                    </div>
+                    <div class="setting-group">
+                        <label for="temperature-unit">温度単位</label>
+                        <select id="temperature-unit">
+                            <option value="metric">摂氏 (°C)</option>
+                            <option value="imperial">華氏 (°F)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="save-settings" class="save-btn">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Install Prompt -->
+        <div id="install-prompt" class="install-prompt hidden">
+            <div class="install-content">
+                <p>このアプリをホーム画面に追加しますか？</p>
+                <div class="install-buttons">
+                    <button id="install-app" class="install-btn">追加</button>
+                    <button id="dismiss-install" class="dismiss-btn">後で</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
