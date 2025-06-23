@@ -569,8 +569,8 @@ class WeatherApp {
     updateBackground(weather) {
         const body = document.body;
         const header = document.querySelector('.header');
-        const weatherCondition = weather.weather[0].main.toLowerCase();
-        const isNight = weather.weather[0].icon.includes('n');
+        const weatherCondition = (weather?.weather?.[0]?.main || 'unknown').toLowerCase();
+        const isNight = weather?.weather?.[0]?.icon?.includes('n') || false;
 
         let gradient;
         

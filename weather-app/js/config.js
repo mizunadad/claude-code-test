@@ -149,7 +149,7 @@ class WeatherConfig {
     addFavorite(city) {
         const favorites = this.getFavorites();
         const exists = favorites.find(fav => 
-            fav.name.toLowerCase() === city.name.toLowerCase() && 
+            (fav.name || '').toLowerCase() === (city.name || '').toLowerCase() && 
             fav.country === city.country
         );
         
@@ -167,7 +167,7 @@ class WeatherConfig {
     removeFavorite(cityName, country) {
         const favorites = this.getFavorites();
         const filtered = favorites.filter(fav => 
-            !(fav.name.toLowerCase() === cityName.toLowerCase() && fav.country === country)
+            !((fav.name || '').toLowerCase() === (cityName || '').toLowerCase() && fav.country === country)
         );
         this.setFavorites(filtered);
     }
@@ -175,7 +175,7 @@ class WeatherConfig {
     isFavorite(cityName, country) {
         const favorites = this.getFavorites();
         return favorites.some(fav => 
-            fav.name.toLowerCase() === cityName.toLowerCase() && 
+            (fav.name || '').toLowerCase() === (cityName || '').toLowerCase() && 
             fav.country === country
         );
     }
