@@ -39,6 +39,10 @@ class WeatherConfig {
         const closeSettings = document.getElementById('close-settings');
         const saveSettings = document.getElementById('save-settings');
         const settingsModal = document.getElementById('settings-modal');
+        
+        const verifyApiKeyBtn = document.getElementById('verify-api-key');
+        const testTokyoBtn = document.getElementById('test-tokyo');
+        const networkCheckBtn = document.getElementById('network-check');
 
         if (themeToggle) {
             themeToggle.addEventListener('click', () => {
@@ -77,6 +81,24 @@ class WeatherConfig {
                 this.closeSettings();
             }
         });
+
+        if (verifyApiKeyBtn) {
+            verifyApiKeyBtn.addEventListener('click', () => {
+                this.verifyApiKey();
+            });
+        }
+
+        if (testTokyoBtn) {
+            testTokyoBtn.addEventListener('click', () => {
+                this.testTokyoWeather();
+            });
+        }
+
+        if (networkCheckBtn) {
+            networkCheckBtn.addEventListener('click', () => {
+                this.checkNetworkStatus();
+            });
+        }
     }
 
     getApiKey() {
@@ -224,6 +246,8 @@ class WeatherConfig {
         if (modal) {
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
+            
+            this.initializeDebugInfo();
             
             setTimeout(() => {
                 if (apiKeyInput) {
@@ -375,6 +399,191 @@ class WeatherConfig {
         } catch (error) {
             console.error('設定のインポートに失敗しました:', error);
             return false;
+        }
+    }
+
+    initializeDebugInfo() {
+        this.updateBrowserInfo();
+        this.checkLocationPermission();
+        this.checkNetworkStatus();
+    }
+
+    updateBrowserInfo() {
+        const browserInfo = document.getElementById('browser-info');
+        if (browserInfo) {
+            const ua = navigator.userAgent;
+            let browser = 'Unknown';
+            
+            if (ua.includes('Chrome')) browser = 'Chrome';
+            else if (ua.includes('Firefox')) browser = 'Firefox';
+            else if (ua.includes('Safari')) browser = 'Safari';
+            else if (ua.includes('Edge')) browser = 'Edge';
+            
+            const isOnline = navigator.onLine;
+            const geolocation = 'geolocation' in navigator;
+            
+            browserInfo.textContent = `${browser} | Online: ${isOnline ? '✅' : '❌'} | Geo: ${geolocation ? '✅' : '❌'}`;
+            browserInfo.className = 'status-value info';
+        }
+    }
+
+    checkLocationPermission() {
+        const locationStatus = document.getElementById('location-status');
+        if (!locationStatus) return;
+
+        if (!navigator.geolocation) {
+            this.updateStatus('location-status', '非対応', 'error');
+            return;
+        }
+
+        navigator.permissions.query({name: 'geolocation'}).then(result => {
+            let status, className;
+            switch (result.state) {
+                case 'granted':
+                    status = '✅ 許可済み';
+                    className = 'success';
+                    break;
+                case 'denied':
+                    status = '❌ 拒否済み';
+                    className = 'error';
+                    break;
+                case 'prompt':
+                    status = '⚠ 未確認';
+                    className = 'warning';
+                    break;
+                default:
+                    status = '不明';
+                    className = 'error';
+            }
+            this.updateStatus('location-status', status, className);
+        }).catch(() => {
+            this.updateStatus('location-status', '確認不可', 'warning');
+        });
+    }
+
+    checkNetworkStatus() {
+        const networkStatus = document.getElementById('network-status');
+        if (!networkStatus) return;
+
+        const isOnline = navigator.onLine;
+        const connection = navigator.connection;
+        
+        let status = isOnline ? '✅ オンライン' : '❌ オフライン';
+        let className = isOnline ? 'success' : 'error';
+        
+        if (connection) {
+            status += ` (${connection.effectiveType || 'unknown'})`;
+        }
+        
+        this.updateStatus('network-status', status, className);
+    }
+
+    async verifyApiKey() {
+        const apiStatus = document.getElementById('api-status');
+        const errorDetails = document.getElementById('error-details');
+        const errorText = document.getElementById('error-text-detail');
+        const verifyBtn = document.getElementById('verify-api-key');
+        
+        if (!apiStatus) return;
+
+        const apiKey = this.getApiKey();
+        if (!apiKey) {
+            this.updateStatus('api-status', '❌ 未設定', 'error');
+            this.showErrorDetails('APIキーが設定されていません。');
+            return;
+        }
+
+        this.updateStatus('api-status', '🔄 確認中...', 'warning');
+        if (verifyBtn) verifyBtn.disabled = true;
+
+        try {
+            const url = this.buildApiUrl('weather', { 
+                lat: 35.6762, 
+                lon: 139.6503 
+            });
+            
+            const response = await fetch(url);
+            
+            if (response.ok) {
+                this.updateStatus('api-status', '✅ 有効', 'success');
+                this.hideErrorDetails();
+            } else {
+                const errorData = await response.json();
+                this.updateStatus('api-status', '❌ 無効', 'error');
+                this.showErrorDetails(`API Error: ${response.status} - ${errorData.message || 'Unknown error'}`);
+            }
+        } catch (error) {
+            this.updateStatus('api-status', '❌ エラー', 'error');
+            this.showErrorDetails(`Network Error: ${error.message}`);
+        } finally {
+            if (verifyBtn) verifyBtn.disabled = false;
+        }
+    }
+
+    async testTokyoWeather() {
+        const testBtn = document.getElementById('test-tokyo');
+        const errorDetails = document.getElementById('error-details');
+        
+        if (!testBtn) return;
+
+        testBtn.disabled = true;
+        testBtn.textContent = '🔄 テスト中...';
+
+        try {
+            const tokyoCoords = { lat: 35.6762, lon: 139.6503 };
+            
+            const url = this.buildApiUrl('weather', tokyoCoords);
+            const response = await fetch(url);
+            
+            if (response.ok) {
+                const data = await response.json();
+                this.showNotification('東京の天気データ取得成功！', 'success');
+                
+                const event = new CustomEvent('debugWeatherData', {
+                    detail: { 
+                        location: { name: '東京', country: 'JP', ...tokyoCoords },
+                        weather: data 
+                    }
+                });
+                document.dispatchEvent(event);
+                
+                this.hideErrorDetails();
+            } else {
+                const errorData = await response.json();
+                this.showErrorDetails(`Tokyo Test Failed: ${response.status} - ${errorData.message || 'Unknown error'}`);
+                this.showNotification('東京テスト失敗', 'error');
+            }
+        } catch (error) {
+            this.showErrorDetails(`Tokyo Test Error: ${error.message}`);
+            this.showNotification('東京テストエラー', 'error');
+        } finally {
+            testBtn.disabled = false;
+            testBtn.textContent = '東京テスト';
+        }
+    }
+
+    updateStatus(elementId, text, className) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = text;
+            element.className = `status-value ${className}`;
+        }
+    }
+
+    showErrorDetails(message) {
+        const errorDetails = document.getElementById('error-details');
+        const errorText = document.getElementById('error-text-detail');
+        
+        if (errorDetails && errorText) {
+            errorText.textContent = message;
+            errorDetails.classList.remove('hidden');
+        }
+    }
+
+    hideErrorDetails() {
+        const errorDetails = document.getElementById('error-details');
+        if (errorDetails) {
+            errorDetails.classList.add('hidden');
         }
     }
 }

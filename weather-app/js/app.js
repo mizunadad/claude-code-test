@@ -71,6 +71,18 @@ class WeatherApp {
             }
         });
 
+        document.addEventListener('debugWeatherData', (e) => {
+            if (e.detail && e.detail.location && e.detail.weather) {
+                this.currentLocation = e.detail.location;
+                this.currentWeather = e.detail.weather;
+                this.displayCurrentWeather(e.detail.weather, e.detail.location);
+                this.hideLoading();
+                this.hideError();
+                this.showWeatherContent();
+                this.switchTab('hourly');
+            }
+        });
+
         window.addEventListener('online', () => {
             if (this.currentLocation) {
                 this.loadWeatherData(this.currentLocation);
@@ -184,7 +196,12 @@ class WeatherApp {
                 this.showError('都市が見つかりませんでした');
             }
         } catch (error) {
-            this.showError('都市の検索に失敗しました: ' + error.message);
+            this.showError('都市の検索に失敗しました: ' + error.message, {
+                type: 'search_error',
+                query: query,
+                error: error.message,
+                timestamp: new Date().toISOString()
+            });
         }
     }
 
@@ -312,7 +329,8 @@ class WeatherApp {
         const response = await fetch(url);
         
         if (!response.ok) {
-            throw new Error(`検索エラー: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`検索エラー: ${response.status} - ${errorData.message || 'Unknown error'}`);
         }
         
         return await response.json();
@@ -342,7 +360,13 @@ class WeatherApp {
 
         } catch (error) {
             console.error('天気データの取得エラー:', error);
-            this.showError('天気情報の取得に失敗しました: ' + error.message);
+            this.showError('天気情報の取得に失敗しました: ' + error.message, {
+                type: 'weather_data_error',
+                location: location,
+                error: error.message,
+                stack: error.stack,
+                timestamp: new Date().toISOString()
+            });
         }
     }
 
@@ -351,7 +375,8 @@ class WeatherApp {
         const response = await fetch(url);
         
         if (!response.ok) {
-            throw new Error(`天気情報エラー: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`天気情報エラー: ${response.status} - ${errorData.message || 'Unknown error'}`);
         }
         
         return await response.json();
@@ -362,7 +387,8 @@ class WeatherApp {
         const response = await fetch(url);
         
         if (!response.ok) {
-            throw new Error(`予報情報エラー: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`予報情報エラー: ${response.status} - ${errorData.message || 'Unknown error'}`);
         }
         
         return await response.json();
@@ -702,13 +728,17 @@ class WeatherApp {
         }
     }
 
-    showError(message) {
+    showError(message, details = null) {
         const error = document.getElementById('error');
         const errorText = document.getElementById('error-text');
         
         if (error && errorText) {
             errorText.textContent = message;
             error.classList.remove('hidden');
+            
+            if (details) {
+                this.config.showErrorDetails(JSON.stringify(details, null, 2));
+            }
         }
         
         this.hideLoading();

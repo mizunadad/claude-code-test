@@ -48,6 +48,132 @@ body {
     color: var(--text-primary);
     line-height: 1.6;
     overflow-x: hidden;
+
+/* Debug Section Styles */
+.debug-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.debug-section h4 {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.debug-buttons {
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.debug-btn {
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s ease;
+}
+
+.debug-btn:hover {
+    background: var(--secondary-color);
+}
+
+.debug-btn:disabled {
+    background: var(--text-muted);
+    cursor: not-allowed;
+}
+
+.debug-info {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.status-item:last-child {
+    border-bottom: none;
+}
+
+.status-label {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.status-value {
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.status-value.success {
+    background: #27AE60;
+    color: white;
+}
+
+.status-value.error {
+    background: #E74C3C;
+    color: white;
+}
+
+.status-value.warning {
+    background: #F39C12;
+    color: white;
+}
+
+.status-value.info {
+    background: var(--primary-color);
+    color: white;
+}
+
+.error-details {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #FFE5E5;
+    border: 1px solid #FFCCCC;
+    border-radius: 5px;
+}
+
+[data-theme="dark"] .error-details {
+    background: #3A1A1A;
+    border-color: #5A2A2A;
+}
+
+.error-details h5 {
+    margin-bottom: 0.5rem;
+    color: #E74C3C;
+}
+
+.error-details pre {
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: var(--text-primary);
+    background: var(--bg-card);
+    padding: 0.5rem;
+    border-radius: 3px;
+    border: 1px solid var(--border-color);
+}
+}
+
+#app {
+    min-height: 100vh;
     transition: all 0.3s ease;
 }
 

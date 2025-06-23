@@ -144,6 +144,38 @@
                             <option value="imperial">華氏 (°F)</option>
                         </select>
                     </div>
+                    
+                    <!-- Debug Section -->
+                    <div class="setting-group debug-section">
+                        <h4>🔧 デバッグ情報</h4>
+                        <div class="debug-buttons">
+                            <button id="verify-api-key" class="debug-btn">APIキー検証</button>
+                            <button id="test-tokyo" class="debug-btn">東京テスト</button>
+                            <button id="network-check" class="debug-btn">ネットワーク確認</button>
+                        </div>
+                        <div id="debug-info" class="debug-info">
+                            <div class="status-item">
+                                <span class="status-label">APIキー:</span>
+                                <span id="api-status" class="status-value">未確認</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">ネットワーク:</span>
+                                <span id="network-status" class="status-value">未確認</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">位置情報:</span>
+                                <span id="location-status" class="status-value">未確認</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">ブラウザ:</span>
+                                <span id="browser-info" class="status-value">-</span>
+                            </div>
+                        </div>
+                        <div id="error-details" class="error-details hidden">
+                            <h5>エラー詳細:</h5>
+                            <pre id="error-text-detail"></pre>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button id="save-settings" class="save-btn">保存</button>
