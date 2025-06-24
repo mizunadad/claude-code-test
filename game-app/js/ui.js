@@ -2,6 +2,7 @@
 
 class GameUI {
     constructor() {
+        console.log('GameUI constructor called');
         this.gridContainer = $('#grid-container');
         this.tileContainer = $('#tile-container');
         this.scoreElement = $('#score');
@@ -11,6 +12,13 @@ class GameUI {
         this.gameMessage = $('#game-message');
         this.messageTitle = $('#message-title');
         this.messageContent = $('#message-content');
+        
+        console.log('DOM elements:', {
+            gridContainer: this.gridContainer,
+            tileContainer: this.tileContainer,
+            scoreElement: this.scoreElement,
+            restartButton: this.restartButton
+        });
         
         this.tiles = new Map(); // タイルIDとDOM要素のマッピング
         this.nextTileId = 1;
@@ -67,7 +75,7 @@ class GameUI {
     
     // キーボード操作の処理
     handleKeyDown(e) {
-        if (game.isAnimating) return;
+        if (game?.isAnimating) return;
         
         const keyMap = {
             'ArrowUp': 'up',
@@ -105,7 +113,7 @@ class GameUI {
     
     // タッチ終了
     handleTouchEnd(e) {
-        if (game.isAnimating) return;
+        if (game?.isAnimating) return;
         
         const touch = e.changedTouches[0];
         const deltaX = touch.clientX - this.touchStartX;
@@ -114,7 +122,9 @@ class GameUI {
         const absDeltaX = Math.abs(deltaX);
         const absDeltaY = Math.abs(deltaY);
         
-        if (Math.max(absDeltaX, absDeltaY) < this.minSwipeDistance) return;
+        if (Math.max(absDeltaX, absDeltaY) < this.minSwipeDistance) {
+            return;
+        }
         
         let direction;
         if (absDeltaX > absDeltaY) {
@@ -162,15 +172,15 @@ class GameUI {
     
     // 移動の実行
     makeMove(direction) {
-        if (game.isAnimating || game.gameEnded) return;
+        if (game?.isAnimating || game?.gameEnded) return;
         
-        game.isAnimating = true;
         const result = game.move(direction);
         
         if (!result) {
-            game.isAnimating = false;
             return;
         }
+        
+        game.isAnimating = true;
         
         // アニメーション実行
         this.animateMove(result).then(() => {
@@ -385,10 +395,16 @@ class GameUI {
 
 // DOM読み込み完了時の処理
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM Content Loaded');
     try {
         // ゲームとUIの初期化
+        console.log('Creating Game2048 instance...');
         game = new Game2048();
+        console.log('Game instance created:', game);
+        
+        console.log('Creating GameUI instance...');
         const gameUI = new GameUI();
+        console.log('GameUI instance created:', gameUI);
         
         // 初期画面の更新
         gameUI.startGame();
@@ -413,6 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
     } catch (error) {
+        console.error('Initialization error:', error);
         handleError(error, 'Game initialization');
         
         // フォールバック：基本的なエラーメッセージを表示
