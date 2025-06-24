@@ -55,12 +55,12 @@
         <div style="background: rgba(255,255,255,0.9); padding: 12px; text-align: center; margin: 12px 0; border-radius: 8px; border: 1px solid #8f7a66;">
             <p style="margin: 0 0 8px 0; color: #8f7a66; font-size: 12px; font-weight: bold;">ゲーム操作</p>
             <div style="margin-bottom: 6px;">
-                <button id="btn-up" data-direction="up" style="width: 50px; height: 50px; background: #8f7a66; color: white; border: none; border-radius: 6px; font-size: 20px; cursor: pointer;">↑</button>
+                <button id="btn-up" data-direction="up" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-tap-highlight-color: transparent;">↑</button>
             </div>
-            <div style="display: flex; justify-content: center; gap: 6px;">
-                <button id="btn-left" data-direction="left" style="width: 50px; height: 50px; background: #8f7a66; color: white; border: none; border-radius: 6px; font-size: 20px; cursor: pointer;">←</button>
-                <button id="btn-down" data-direction="down" style="width: 50px; height: 50px; background: #8f7a66; color: white; border: none; border-radius: 6px; font-size: 20px; cursor: pointer;">↓</button>
-                <button id="btn-right" data-direction="right" style="width: 50px; height: 50px; background: #8f7a66; color: white; border: none; border-radius: 6px; font-size: 20px; cursor: pointer;">→</button>
+            <div style="display: flex; justify-content: center; gap: 8px;">
+                <button id="btn-left" data-direction="left" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-tap-highlight-color: transparent;">←</button>
+                <button id="btn-down" data-direction="down" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-tap-highlight-color: transparent;">↓</button>
+                <button id="btn-right" data-direction="right" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-tap-highlight-color: transparent;">→</button>
             </div>
         </div>
 
@@ -473,14 +473,40 @@
                 buttons.forEach(function(btn) {
                     const element = document.getElementById(btn.id);
                     if (element) {
-                        element.addEventListener('click', function() {
+                        updateStatus('ボタン見つかりました: ' + btn.id);
+                        
+                        // クリックイベント
+                        element.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            updateStatus('クリック: ' + btn.direction);
                             makeMove(btn.direction);
+                        });
+                        
+                        // タッチイベント（複数追加）
+                        element.addEventListener('touchstart', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            updateStatus('タッチ開始: ' + btn.direction);
                         });
                         
                         element.addEventListener('touchend', function(e) {
                             e.preventDefault();
+                            e.stopPropagation();
+                            updateStatus('タッチ終了: ' + btn.direction);
                             makeMove(btn.direction);
                         });
+                        
+                        // iOS Safari用の追加イベント
+                        element.addEventListener('mousedown', function(e) {
+                            if (isMobile) {
+                                e.preventDefault();
+                                updateStatus('マウスダウン: ' + btn.direction);
+                                makeMove(btn.direction);
+                            }
+                        });
+                        
+                    } else {
+                        updateStatus('ボタンが見つかりません: ' + btn.id);
                     }
                 });
                 
@@ -498,6 +524,18 @@
                 }
                 
                 updateStatus('ゲーム準備完了');
+                
+                // 少し遅延してボタンを再確認
+                setTimeout(function() {
+                    buttons.forEach(function(btn) {
+                        const element = document.getElementById(btn.id);
+                        if (element) {
+                            updateStatus('遅延確認: ' + btn.id + ' 見つかりました');
+                        } else {
+                            updateStatus('遅延確認: ' + btn.id + ' 見つかりません');
+                        }
+                    });
+                }, 500);
                 
             } catch (error) {
                 showError('初期化エラー: ' + error.message);
