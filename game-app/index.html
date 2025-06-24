@@ -37,15 +37,15 @@
             </div>
         </div>
 
-        <h1 style="color: red; text-align: center; font-size: 50px;">テストメッセージ</h1>
-        
-        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; background: red; padding: 30px; border: 5px solid black;">
-            <h2 style="color: white; margin: 0 0 20px 0;">矢印ボタン</h2>
-            <button onclick="window.gameUI && window.gameUI.makeMove('up')" style="display: block; width: 100px; height: 100px; background: blue; color: white; border: none; font-size: 40px; margin: 10px auto;">↑</button>
-            <div style="text-align: center;">
-                <button onclick="window.gameUI && window.gameUI.makeMove('left')" style="width: 100px; height: 100px; background: blue; color: white; border: none; font-size: 40px; margin: 10px;">←</button>
-                <button onclick="window.gameUI && window.gameUI.makeMove('down')" style="width: 100px; height: 100px; background: blue; color: white; border: none; font-size: 40px; margin: 10px;">↓</button>
-                <button onclick="window.gameUI && window.gameUI.makeMove('right')" style="width: 100px; height: 100px; background: blue; color: white; border: none; font-size: 40px; margin: 10px;">→</button>
+        <!-- 矢印ボタン -->
+        <div style="background: rgba(255,255,255,0.95); padding: 20px; text-align: center; margin: 20px auto; border-radius: 12px; max-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            <div style="margin-bottom: 10px;">
+                <button onclick="window.gameUI && window.gameUI.makeMove('up')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">↑</button>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 10px;">
+                <button onclick="window.gameUI && window.gameUI.makeMove('left')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">←</button>
+                <button onclick="window.gameUI && window.gameUI.makeMove('down')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">↓</button>
+                <button onclick="window.gameUI && window.gameUI.makeMove('right')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">→</button>
             </div>
         </div>
 
