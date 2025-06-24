@@ -19,7 +19,7 @@ echo "🕒 実行時刻: $(date '+%Y-%m-%d %H:%M:%S')"
 # COMMIT_MESSAGE="Update API error handling and user feedback"
 # COMMIT_MESSAGE="Improve weather icons and animations"
 # 
-COMMIT_MESSAGE="modified 2048 puzzle game to project"
+COMMIT_MESSAGE="re-modified 2048 puzzle game to project"
 # 
 # ================================================
 

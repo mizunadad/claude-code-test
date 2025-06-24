@@ -25,6 +25,7 @@ class GameUI {
         this.touchStartX = 0;
         this.touchStartY = 0;
         this.minSwipeDistance = 50;
+        this.isTouchingGameArea = false;
         
         this.init();
     }
@@ -51,18 +52,40 @@ class GameUI {
         this.restartButton.addEventListener('click', () => this.restartGame());
         this.tryAgainButton.addEventListener('click', () => this.restartGame());
         
-        // タッチ操作
-        this.gridContainer.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
-        this.gridContainer.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
-        this.gridContainer.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
+        // タッチ操作 - ゲームエリアでのみ処理
+        this.gridContainer.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.handleTouchStart(e);
+        }, { passive: false });
+        
+        this.gridContainer.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.handleTouchMove(e);
+        }, { passive: false });
+        
+        this.gridContainer.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.handleTouchEnd(e);
+        }, { passive: false });
         
         // マウス操作（デスクトップでのドラッグ）
         this.gridContainer.addEventListener('mousedown', (e) => this.handleMouseDown(e));
         
-        // ゲーム開始時の防止処理
+        // iOS Safari対応
         document.addEventListener('gesturestart', (e) => e.preventDefault());
         document.addEventListener('gesturechange', (e) => e.preventDefault());
         document.addEventListener('gestureend', (e) => e.preventDefault());
+        
+        // 全体のスクロール防止（デバッグ用）
+        document.addEventListener('touchmove', (e) => {
+            const target = e.target.closest('.game-container');
+            if (target) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     }
     
     // タイルサイズの計算
@@ -102,18 +125,22 @@ class GameUI {
         const touch = e.touches[0];
         this.touchStartX = touch.clientX;
         this.touchStartY = touch.clientY;
+        this.isTouchingGameArea = true;
         
-        e.preventDefault();
+        console.log('Touch start:', { x: this.touchStartX, y: this.touchStartY });
     }
     
     // タッチ移動
     handleTouchMove(e) {
-        e.preventDefault();
+        // 何もしない - preventDefaultは既にイベントリスナーで処理済み
     }
     
     // タッチ終了
     handleTouchEnd(e) {
-        if (game?.isAnimating) return;
+        if (!this.isTouchingGameArea || game?.isAnimating) {
+            this.isTouchingGameArea = false;
+            return;
+        }
         
         const touch = e.changedTouches[0];
         const deltaX = touch.clientX - this.touchStartX;
@@ -122,7 +149,15 @@ class GameUI {
         const absDeltaX = Math.abs(deltaX);
         const absDeltaY = Math.abs(deltaY);
         
+        console.log('Touch end:', { 
+            deltaX, deltaY, 
+            absDeltaX, absDeltaY, 
+            minSwipe: this.minSwipeDistance 
+        });
+        
         if (Math.max(absDeltaX, absDeltaY) < this.minSwipeDistance) {
+            console.log('Swipe too short');
+            this.isTouchingGameArea = false;
             return;
         }
         
@@ -133,8 +168,9 @@ class GameUI {
             direction = deltaY > 0 ? 'down' : 'up';
         }
         
+        console.log('Swipe direction:', direction);
         this.makeMove(direction);
-        e.preventDefault();
+        this.isTouchingGameArea = false;
     }
     
     // マウス操作（デスクトップ用）
