@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+    <!-- キャッシュ無効化 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>2048 - パズルゲーム</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/game.css">
-    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/style.css?v=2024062401">
+    <link rel="stylesheet" href="css/game.css?v=2024062401">
+    <link rel="stylesheet" href="css/responsive.css?v=2024062401">
     <meta name="description" content="2048パズルゲーム - スマホ・PC対応">
     <meta name="theme-color" content="#776e65">
     <link rel="manifest" href="manifest.json">
@@ -37,16 +41,18 @@
             </div>
         </div>
 
-        <!-- 矢印ボタン -->
-        <div style="background: rgba(255,255,255,0.95); padding: 20px; text-align: center; margin: 20px auto; border-radius: 12px; max-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <!-- 矢印ボタン - 最終更新: 2024-06-24 15:30 -->
+        <div style="background: rgba(255,255,255,0.95); padding: 20px; text-align: center; margin: 20px auto; border-radius: 12px; max-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid #8f7a66;">
+            <p style="margin: 0 0 15px 0; color: #8f7a66; font-size: 14px; font-weight: bold;">ゲーム操作</p>
             <div style="margin-bottom: 10px;">
-                <button onclick="window.gameUI && window.gameUI.makeMove('up')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">↑</button>
+                <button onclick="window.gameUI && window.gameUI.makeMove('up')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;">↑</button>
             </div>
             <div style="display: flex; justify-content: center; gap: 10px;">
-                <button onclick="window.gameUI && window.gameUI.makeMove('left')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">←</button>
-                <button onclick="window.gameUI && window.gameUI.makeMove('down')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">↓</button>
-                <button onclick="window.gameUI && window.gameUI.makeMove('right')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">→</button>
+                <button onclick="window.gameUI && window.gameUI.makeMove('left')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;">←</button>
+                <button onclick="window.gameUI && window.gameUI.makeMove('down')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;">↓</button>
+                <button onclick="window.gameUI && window.gameUI.makeMove('right')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;">→</button>
             </div>
+            <p style="margin: 15px 0 0 0; color: #999; font-size: 12px;">v2024062401</p>
         </div>
 
         <div class="game-container">
@@ -112,9 +118,29 @@
         </div>
     </div>
 
-    <script src="js/utils.js"></script>
-    <script src="js/storage.js"></script>
-    <script src="js/game.js"></script>
-    <script src="js/ui.js"></script>
+    <!-- キャッシュ対策とデバッグ用スクリプト -->
+    <script>
+        // キャッシュを無効化
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+        
+        // デバッグ用：ページロード確認
+        console.log('Page loaded at:', new Date().toISOString());
+        
+        // 強制リロード関数
+        window.forceReload = function() {
+            window.location.reload(true);
+        };
+    </script>
+    
+    <script src="js/utils.js?v=2024062401"></script>
+    <script src="js/storage.js?v=2024062401"></script>
+    <script src="js/game.js?v=2024062401"></script>
+    <script src="js/ui.js?v=2024062401"></script>
 </body>
 </html>
