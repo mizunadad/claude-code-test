@@ -1,0 +1,266 @@
+/* 基本スタイル */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #776e65;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+    width: 90%;
+    max-width: 500px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    position: relative;
+}
+
+/* ヘッダー */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.title {
+    font-size: 48px;
+    font-weight: bold;
+    color: #776e65;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 0;
+}
+
+.score-container {
+    display: flex;
+    gap: 12px;
+}
+
+.score-box {
+    background: #bbada0;
+    border-radius: 8px;
+    padding: 8px 16px;
+    text-align: center;
+    min-width: 80px;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.score-label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #eee4da;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.score {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+    margin-top: 2px;
+}
+
+/* ゲーム紹介 */
+.game-intro {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.game-intro p {
+    font-size: 16px;
+    margin-bottom: 16px;
+    color: #776e65;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.restart-button {
+    background: #8f7a66;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.restart-button:hover {
+    background: #9f8a76;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.restart-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 説明文 */
+.instructions {
+    margin-top: 32px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.instructions h3 {
+    color: #776e65;
+    margin-bottom: 12px;
+    font-size: 18px;
+}
+
+.instructions ul {
+    list-style: none;
+    padding: 0;
+}
+
+.instructions li {
+    margin-bottom: 8px;
+    color: #776e65;
+    font-size: 14px;
+}
+
+.instructions strong {
+    color: #8f7a66;
+    font-weight: bold;
+}
+
+/* ゲームメッセージ（オーバーレイ） */
+.game-message {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    z-index: 100;
+    backdrop-filter: blur(5px);
+}
+
+.game-message.active {
+    display: flex;
+}
+
+.message-text {
+    text-align: center;
+    padding: 24px;
+}
+
+.message-text h2 {
+    font-size: 32px;
+    color: #776e65;
+    margin-bottom: 16px;
+}
+
+.message-text p {
+    font-size: 18px;
+    color: #776e65;
+    margin-bottom: 24px;
+}
+
+.try-again-button {
+    background: #8f7a66;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 16px 32px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.try-again-button:hover {
+    background: #9f8a76;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* アニメーション */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* スコア上昇アニメーション */
+@keyframes scoreIncrease {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.score-increase {
+    animation: scoreIncrease 0.3s ease-out;
+}
+
+/* アクセシビリティ */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* フォーカス表示 */
+button:focus {
+    outline: 2px solid #8f7a66;
+    outline-offset: 2px;
+}
+
+/* 選択不可 */
+.title,
+.score,
+.score-label {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}

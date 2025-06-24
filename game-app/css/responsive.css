@@ -1,0 +1,404 @@
+/* レスポンシブデザイン */
+
+/* 小さなスマホ (320px - 375px) */
+@media (max-width: 375px) {
+    .container {
+        width: 95%;
+        padding: 16px;
+    }
+    
+    .title {
+        font-size: 36px;
+    }
+    
+    .score-box {
+        padding: 6px 12px;
+        min-width: 70px;
+    }
+    
+    .score {
+        font-size: 18px;
+    }
+    
+    .score-label {
+        font-size: 11px;
+    }
+    
+    .game-container {
+        max-width: 280px;
+        margin: 16px auto;
+    }
+    
+    .tile {
+        font-size: 24px;
+    }
+    
+    .tile-128,
+    .tile-256,
+    .tile-512 {
+        font-size: 20px;
+    }
+    
+    .tile-1024,
+    .tile-2048 {
+        font-size: 18px;
+    }
+    
+    .tile-4096,
+    .tile-8192 {
+        font-size: 14px;
+    }
+    
+    .instructions {
+        margin-top: 24px;
+        padding: 16px;
+    }
+    
+    .instructions h3 {
+        font-size: 16px;
+    }
+    
+    .instructions li {
+        font-size: 13px;
+    }
+}
+
+/* 中型スマホ (376px - 414px) */
+@media (min-width: 376px) and (max-width: 414px) {
+    .container {
+        width: 92%;
+        padding: 20px;
+    }
+    
+    .title {
+        font-size: 42px;
+    }
+    
+    .game-container {
+        max-width: 320px;
+    }
+    
+    .tile {
+        font-size: 28px;
+    }
+    
+    .tile-128,
+    .tile-256,
+    .tile-512 {
+        font-size: 24px;
+    }
+    
+    .tile-1024,
+    .tile-2048 {
+        font-size: 20px;
+    }
+}
+
+/* 大型スマホ (415px - 767px) */
+@media (min-width: 415px) and (max-width: 767px) {
+    .container {
+        width: 90%;
+        padding: 24px;
+    }
+    
+    .game-container {
+        max-width: 360px;
+    }
+}
+
+/* タブレット縦 (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .container {
+        max-width: 600px;
+        padding: 32px;
+    }
+    
+    .title {
+        font-size: 56px;
+    }
+    
+    .score-box {
+        padding: 12px 20px;
+        min-width: 100px;
+    }
+    
+    .score {
+        font-size: 24px;
+    }
+    
+    .score-label {
+        font-size: 14px;
+    }
+    
+    .game-container {
+        max-width: 480px;
+        margin: 32px auto;
+    }
+    
+    .tile {
+        font-size: 36px;
+    }
+    
+    .tile-128,
+    .tile-256,
+    .tile-512 {
+        font-size: 32px;
+    }
+    
+    .tile-1024,
+    .tile-2048 {
+        font-size: 28px;
+    }
+    
+    .tile-4096,
+    .tile-8192 {
+        font-size: 24px;
+    }
+    
+    .instructions {
+        padding: 24px;
+    }
+    
+    .instructions h3 {
+        font-size: 20px;
+    }
+    
+    .instructions li {
+        font-size: 16px;
+    }
+}
+
+/* デスクトップ (1025px以上) */
+@media (min-width: 1025px) {
+    body {
+        font-size: 18px;
+    }
+    
+    .container {
+        max-width: 650px;
+        padding: 40px;
+    }
+    
+    .title {
+        font-size: 64px;
+    }
+    
+    .score-container {
+        gap: 16px;
+    }
+    
+    .score-box {
+        padding: 16px 24px;
+        min-width: 120px;
+    }
+    
+    .score {
+        font-size: 28px;
+    }
+    
+    .score-label {
+        font-size: 16px;
+    }
+    
+    .game-container {
+        max-width: 500px;
+        margin: 40px auto;
+    }
+    
+    .tile {
+        font-size: 40px;
+    }
+    
+    .tile-128,
+    .tile-256,
+    .tile-512 {
+        font-size: 36px;
+    }
+    
+    .tile-1024,
+    .tile-2048 {
+        font-size: 32px;
+    }
+    
+    .tile-4096,
+    .tile-8192 {
+        font-size: 28px;
+    }
+    
+    .tile-16384,
+    .tile-32768,
+    .tile-65536,
+    .tile-131072 {
+        font-size: 24px;
+    }
+    
+    .instructions {
+        padding: 32px;
+    }
+    
+    .instructions h3 {
+        font-size: 22px;
+    }
+    
+    .instructions li {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+    
+    .restart-button,
+    .try-again-button {
+        font-size: 18px;
+        padding: 16px 32px;
+    }
+}
+
+/* 横画面対応 */
+@media (orientation: landscape) and (max-height: 600px) {
+    .container {
+        width: 95%;
+        max-width: 900px;
+        padding: 16px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        grid-template-rows: auto auto;
+        gap: 16px;
+        align-items: start;
+    }
+    
+    .header {
+        grid-column: 1 / -1;
+        margin-bottom: 0;
+    }
+    
+    .game-intro {
+        grid-column: 1;
+        margin-bottom: 0;
+        text-align: left;
+    }
+    
+    .game-container {
+        grid-column: 2;
+        margin: 0;
+        max-width: 300px;
+        max-height: 300px;
+    }
+    
+    .instructions {
+        grid-column: 3;
+        margin-top: 0;
+        padding: 16px;
+    }
+    
+    .instructions h3 {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+    
+    .instructions li {
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+    
+    .title {
+        font-size: 36px;
+    }
+    
+    .tile {
+        font-size: 20px;
+    }
+    
+    .tile-128,
+    .tile-256,
+    .tile-512 {
+        font-size: 18px;
+    }
+    
+    .tile-1024,
+    .tile-2048 {
+        font-size: 16px;
+    }
+    
+    .tile-4096,
+    .tile-8192 {
+        font-size: 14px;
+    }
+}
+
+/* 高解像度ディスプレイ対応 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .tile {
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* プリント用スタイル */
+@media print {
+    body {
+        background: white;
+    }
+    
+    .container {
+        background: white;
+        box-shadow: none;
+        max-width: none;
+        width: 100%;
+    }
+    
+    .game-container {
+        max-width: 400px;
+    }
+    
+    .instructions {
+        page-break-inside: avoid;
+    }
+}
+
+/* 大画面用（4K等） */
+@media (min-width: 1920px) {
+    .container {
+        max-width: 800px;
+        padding: 48px;
+    }
+    
+    .title {
+        font-size: 80px;
+    }
+    
+    .game-container {
+        max-width: 600px;
+        margin: 48px auto;
+    }
+    
+    .tile {
+        font-size: 48px;
+    }
+    
+    .tile-128,
+    .tile-256,
+    .tile-512 {
+        font-size: 42px;
+    }
+    
+    .tile-1024,
+    .tile-2048 {
+        font-size: 36px;
+    }
+}
+
+/* アクセシビリティ - 大きな文字サイズ設定 */
+@media (prefers-contrast: high) {
+    .tile {
+        border: 2px solid #000;
+    }
+    
+    .grid-cell {
+        border: 1px solid #999;
+    }
+}
+
+/* ダークモード対応の準備 */
+@media (prefers-color-scheme: dark) {
+    /* 将来的なダークモード対応用 */
+}

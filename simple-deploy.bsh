@@ -1,0 +1,101 @@
+#!/bin/bash
+# シンプル自動デプロイスクリプト（Bash版）
+# 使用方法: ./simple-deploy.sh
+
+echo "🚀 Claude Code 簡易デプロイ開始"
+echo "================================"
+
+# 現在のディレクトリと時刻表示
+echo "📁 作業ディレクトリ: $(pwd)"
+echo "🕒 実行時刻: $(date '+%Y-%m-%d %H:%M:%S')"
+
+# ================================================
+# 📝 毎回ここを編集してください！
+# ================================================
+# 
+# 例：
+# COMMIT_MESSAGE="Add dark mode feature to weather app"
+# COMMIT_MESSAGE="Fix mobile responsive layout issues"
+# COMMIT_MESSAGE="Update API error handling and user feedback"
+# COMMIT_MESSAGE="Improve weather icons and animations"
+# 
+COMMIT_MESSAGE="Add 2048 puzzle game to project"
+# 
+# ================================================
+
+echo ""
+echo "💬 コミットメッセージ: $COMMIT_MESSAGE"
+echo ""
+
+# Gitリポジトリ確認
+if [ ! -d .git ]; then
+    echo "❌ エラー: Gitリポジトリではありません"
+    echo "   claude-code-testディレクトリで実行してください"
+    exit 1
+fi
+
+# 変更されたファイルを確認
+echo "📋 変更されたファイル:"
+GIT_STATUS=$(git status --porcelain)
+
+if [ -z "$GIT_STATUS" ]; then
+    echo "⚠️  変更がありません。デプロイをスキップします。"
+    exit 0
+fi
+
+git status --short
+
+echo ""
+echo -n "🔄 デプロイを実行しますか? (y/N): "
+read -r CONFIRM
+
+if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+    echo "❌ デプロイをキャンセルしました"
+    exit 0
+fi
+
+echo ""
+echo "⏳ Git操作を実行中..."
+
+# Git操作実行
+echo "1️⃣ ファイルをステージング..."
+if ! git add .; then
+    echo "❌ git add に失敗しました"
+    exit 1
+fi
+
+echo "2️⃣ コミット作成..."
+if ! git commit -m "$COMMIT_MESSAGE"; then
+    echo "❌ git commit に失敗しました"
+    exit 1
+fi
+
+echo "3️⃣ GitHubにプッシュ..."
+if ! git push origin main; then
+    echo "❌ git push に失敗しました"
+    exit 1
+fi
+
+echo ""
+echo "✅ デプロイ完了！"
+
+# リポジトリ情報取得
+REPO_URL=$(git remote get-url origin)
+USERNAME=$(echo "$REPO_URL" | sed 's/.*github\.com[\/:]//g' | sed 's/\/.*//g')
+REPO_NAME=$(echo "$REPO_URL" | sed 's/.*\///g' | sed 's/\.git//g')
+
+echo ""
+echo "📱 アプリURL:"
+echo "   https://$USERNAME.github.io/$REPO_NAME/"
+echo "   https://$USERNAME.github.io/$REPO_NAME/weather-app/"
+
+if [ -d game-app ]; then
+    echo "   https://$USERNAME.github.io/$REPO_NAME/game-app/"
+fi
+
+echo ""
+echo "⏰ GitHub Pagesの更新まで約5分お待ちください"
+echo "🔄 更新状況: https://github.com/$USERNAME/$REPO_NAME/actions"
+echo ""
+echo "🎉 Happy Coding! 🚀"
+echo "================================"

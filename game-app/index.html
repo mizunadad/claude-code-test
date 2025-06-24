@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 - パズルゲーム</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/game.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <meta name="description" content="2048パズルゲーム - スマホ・PC対応">
+    <meta name="theme-color" content="#776e65">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="2048">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">2048</h1>
+            <div class="score-container">
+                <div class="score-box">
+                    <div class="score-label">スコア</div>
+                    <div class="score" id="score">0</div>
+                </div>
+                <div class="score-box">
+                    <div class="score-label">ベスト</div>
+                    <div class="score" id="best-score">0</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="game-intro">
+            <p>タイルを動かして <strong>2048</strong> を作ろう！</p>
+            <div class="controls">
+                <button class="restart-button" id="restart-btn">新しいゲーム</button>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <div class="grid-container" id="grid-container">
+                <div class="grid-row">
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+                <div class="grid-row">
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+                <div class="grid-row">
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+                <div class="grid-row">
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+            </div>
+            <div class="tile-container" id="tile-container">
+                <!-- タイルは動的に生成される -->
+            </div>
+        </div>
+
+        <div class="game-message" id="game-message">
+            <div class="message-text">
+                <h2 id="message-title">ゲームオーバー</h2>
+                <p id="message-content">再挑戦しますか？</p>
+                <button class="try-again-button" id="try-again-btn">もう一度</button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>遊び方</h3>
+            <ul>
+                <li><strong>PC:</strong> 矢印キーでタイルを移動</li>
+                <li><strong>スマホ:</strong> スワイプでタイルを移動</li>
+                <li>同じ数字のタイルがぶつかると合体します</li>
+                <li>2048を作ることが目標です！</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/ui.js"></script>
+</body>
+</html>
