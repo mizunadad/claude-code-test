@@ -42,6 +42,13 @@
             <button id="restart-game-btn" style="background: #8f7a66; color: white; border: none; border-radius: 6px; padding: 8px 16px; font-size: 14px; font-weight: bold; cursor: pointer;">新しいゲーム</button>
         </div>
         
+        <!-- 基本動作テスト -->
+        <div style="background: yellow; padding: 10px; margin: 10px 0; border: 2px solid red;">
+            <h3 style="margin: 0; color: red;">動作テスト</h3>
+            <button onclick="alert('ボタンが動作しています！')" style="background: green; color: white; padding: 10px; margin: 5px; border: none; border-radius: 5px;">テストボタン</button>
+            <p style="margin: 5px 0; color: black; font-weight: bold;">このメッセージが見える場合、HTMLは正常です</p>
+        </div>
+        
         <!-- デバッグ情報 -->
         <div id="debug-info" style="background: #f0f0f0; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px; color: #666;">
             状態: ページ読み込み中...
@@ -237,9 +244,139 @@
         });
     </script>
     
-    <script src="js/utils.js?v=2024062401"></script>
-    <script src="js/storage.js?v=2024062401"></script>
-    <script src="js/game.js?v=2024062401"></script>
-    <script src="js/ui.js?v=2024062401"></script>
+    <!-- 基本的な動作確認 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 基本動作テスト
+            console.log('=== ページ読み込み完了 ===');
+            
+            // デバッグ情報更新関数
+            function updateStatus(message) {
+                const debugEl = document.getElementById('debug-info');
+                if (debugEl) {
+                    debugEl.textContent = '状態: ' + message;
+                }
+                console.log('Status:', message);
+            }
+            
+            updateStatus('JavaScript動作中');
+            
+            // 簡単な2048ゲーム
+            let grid = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
+            let score = 0;
+            
+            // ランダムタイル追加
+            function addRandomTile() {
+                const emptyCells = [];
+                for (let r = 0; r < 4; r++) {
+                    for (let c = 0; c < 4; c++) {
+                        if (grid[r][c] === 0) {
+                            emptyCells.push({r, c});
+                        }
+                    }
+                }
+                if (emptyCells.length > 0) {
+                    const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                    grid[randomCell.r][randomCell.c] = Math.random() < 0.9 ? 2 : 4;
+                }
+            }
+            
+            // グリッド表示更新
+            function updateGrid() {
+                const container = document.getElementById('tile-container');
+                if (container) {
+                    container.innerHTML = '';
+                    for (let r = 0; r < 4; r++) {
+                        for (let c = 0; c < 4; c++) {
+                            if (grid[r][c] !== 0) {
+                                const tile = document.createElement('div');
+                                tile.textContent = grid[r][c];
+                                tile.style.cssText = `
+                                    position: absolute;
+                                    width: 70px;
+                                    height: 70px;
+                                    background: #eee4da;
+                                    border-radius: 6px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-weight: bold;
+                                    font-size: 24px;
+                                    color: #776e65;
+                                    left: ${c * 80 + 10}px;
+                                    top: ${r * 80 + 10}px;
+                                `;
+                                container.appendChild(tile);
+                            }
+                        }
+                    }
+                }
+                
+                // スコア更新
+                const scoreEl = document.getElementById('current-score');
+                if (scoreEl) scoreEl.textContent = score;
+            }
+            
+            // 移動処理
+            function makeMove(direction) {
+                updateStatus('移動: ' + direction);
+                // 簡単な移動ロジック（完全版ではありませんが動作確認用）
+                let moved = false;
+                
+                if (direction === 'left') {
+                    for (let r = 0; r < 4; r++) {
+                        const row = grid[r].filter(val => val !== 0);
+                        while (row.length < 4) row.push(0);
+                        if (JSON.stringify(row) !== JSON.stringify(grid[r])) {
+                            moved = true;
+                            grid[r] = row;
+                        }
+                    }
+                }
+                
+                if (moved) {
+                    addRandomTile();
+                    updateGrid();
+                    score += 10;
+                }
+            }
+            
+            // 初期化
+            addRandomTile();
+            addRandomTile();
+            updateGrid();
+            updateStatus('ゲーム準備完了');
+            
+            // ボタンイベント設定
+            const buttons = [
+                {id: 'btn-up', direction: 'up'},
+                {id: 'btn-down', direction: 'down'},
+                {id: 'btn-left', direction: 'left'},
+                {id: 'btn-right', direction: 'right'}
+            ];
+            
+            buttons.forEach(function(btn) {
+                const element = document.getElementById(btn.id);
+                if (element) {
+                    element.addEventListener('click', function() {
+                        makeMove(btn.direction);
+                    });
+                }
+            });
+            
+            // 新しいゲームボタン
+            const restartBtn = document.getElementById('restart-game-btn');
+            if (restartBtn) {
+                restartBtn.addEventListener('click', function() {
+                    grid = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
+                    score = 0;
+                    addRandomTile();
+                    addRandomTile();
+                    updateGrid();
+                    updateStatus('新しいゲーム開始');
+                });
+            }
+        });
+    </script>
 </body>
 </html>
