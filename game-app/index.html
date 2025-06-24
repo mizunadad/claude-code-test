@@ -95,17 +95,6 @@
             </div>
         </div>
 
-        <!-- 矢印キーボタン -->
-        <div class="arrow-controls" style="display: flex; flex-direction: column; align-items: center; margin: 24px 0; gap: 8px; width: 100%;">
-            <div class="arrow-row" style="display: flex; gap: 8px; align-items: center; justify-content: center;">
-                <button class="arrow-btn" id="arrow-up" data-direction="up" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 12px; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); display: flex; align-items: center; justify-content: center;">↑</button>
-            </div>
-            <div class="arrow-row" style="display: flex; gap: 8px; align-items: center; justify-content: center;">
-                <button class="arrow-btn" id="arrow-left" data-direction="left" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 12px; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); display: flex; align-items: center; justify-content: center;">←</button>
-                <button class="arrow-btn" id="arrow-down" data-direction="down" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 12px; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); display: flex; align-items: center; justify-content: center;">↓</button>
-                <button class="arrow-btn" id="arrow-right" data-direction="right" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 12px; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); display: flex; align-items: center; justify-content: center;">→</button>
-            </div>
-        </div>
 
         <div class="instructions">
             <h3>遊び方</h3>
@@ -131,6 +120,15 @@
         
         // デバッグ用：ページロード確認
         console.log('Page loaded at:', new Date().toISOString());
+        
+        // 自動キャッシュクリア：開発中のみ
+        // 本番環境では以下のコメントアウトを外してください
+        /*
+        if (window.location.search.indexOf('nocache') === -1 && window.location.hostname === 'localhost') {
+            const separator = window.location.search ? '&' : '?';
+            window.location.href = window.location.href + separator + 'nocache=' + Date.now();
+        }
+        */
         
         // 強制リロード関数
         window.forceReload = function() {
