@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+    <!-- モバイル対応強化 -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
     <!-- キャッシュ無効化 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -45,8 +48,9 @@
         <!-- 基本動作テスト -->
         <div style="background: yellow; padding: 10px; margin: 10px 0; border: 2px solid red;">
             <h3 style="margin: 0; color: red;">動作テスト</h3>
-            <button onclick="alert('ボタンが動作しています！')" style="background: green; color: white; padding: 10px; margin: 5px; border: none; border-radius: 5px;">テストボタン</button>
+            <button id="test-btn" style="background: green; color: white; padding: 15px; margin: 5px; border: none; border-radius: 5px; font-size: 16px; touch-action: manipulation;">テストボタン</button>
             <p style="margin: 5px 0; color: black; font-weight: bold;">このメッセージが見える場合、HTMLは正常です</p>
+            <p id="test-result" style="margin: 5px 0; color: blue; font-weight: bold;">ボタンをタッチしてください</p>
         </div>
         
         <!-- デバッグ情報 -->
@@ -244,22 +248,73 @@
         });
     </script>
     
-    <!-- 基本的な動作確認 -->
+    <!-- モバイル専用エラーハンドリング -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 基本動作テスト
-            console.log('=== ページ読み込み完了 ===');
+        // 最初にモバイル検出
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // エラーを表示する関数
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; background: red; color: white; padding: 10px; z-index: 10000; font-size: 14px;';
+            errorDiv.textContent = 'エラー: ' + message;
+            document.body.insertBefore(errorDiv, document.body.firstChild);
+        }
+        
+        // グローバルエラーハンドラー
+        window.onerror = function(message, source, lineno, colno, error) {
+            showError(message + ' (行: ' + lineno + ')');
+            return true;
+        };
+        
+        // Promise エラーハンドラー
+        window.addEventListener('unhandledrejection', function(event) {
+            showError('Promise エラー: ' + event.reason);
+        });
+        
+        // 安全なDOMContentLoaded
+        function safeInit() {
+            try {
+                console.log('=== ページ読み込み開始 ===');
+                console.log('User Agent:', navigator.userAgent);
+                console.log('Is Mobile:', isMobile);
             
-            // デバッグ情報更新関数
-            function updateStatus(message) {
-                const debugEl = document.getElementById('debug-info');
-                if (debugEl) {
-                    debugEl.textContent = '状態: ' + message;
+                // デバッグ情報更新関数
+                function updateStatus(message) {
+                    try {
+                        const debugEl = document.getElementById('debug-info');
+                        if (debugEl) {
+                            debugEl.textContent = '状態: ' + message + (isMobile ? ' (モバイル)' : ' (PC)');
+                        }
+                        console.log('Status:', message);
+                    } catch (e) {
+                        console.error('updateStatus error:', e);
+                    }
                 }
-                console.log('Status:', message);
-            }
-            
-            updateStatus('JavaScript動作中');
+                
+                updateStatus('JavaScript動作中');
+                
+                // テストボタンの設定
+                const testBtn = document.getElementById('test-btn');
+                const testResult = document.getElementById('test-result');
+                
+                if (testBtn && testResult) {
+                    testBtn.addEventListener('click', function() {
+                        testResult.textContent = 'ボタンが正常に動作しました！';
+                        testResult.style.color = 'green';
+                        updateStatus('テストボタン動作確認');
+                    });
+                    
+                    // タッチイベントも追加（モバイル用）
+                    testBtn.addEventListener('touchend', function(e) {
+                        e.preventDefault();
+                        testResult.textContent = 'タッチ操作が正常に動作しました！';
+                        testResult.style.color = 'green';
+                        updateStatus('タッチ操作確認');
+                    });
+                }
+                
+                updateStatus('初期化完了');
             
             // 簡単な2048ゲーム
             let grid = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
@@ -376,7 +431,28 @@
                     updateStatus('新しいゲーム開始');
                 });
             }
-        });
+            
+            } catch (error) {
+                showError('初期化エラー: ' + error.message);
+                console.error('Initialization error:', error);
+            }
+        }
+        
+        // DOMContentLoadedイベント
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', safeInit);
+        } else {
+            // すでに読み込み完了している場合
+            safeInit();
+        }
+        
+        // フォールバック：3秒後に強制初期化
+        setTimeout(function() {
+            const debugEl = document.getElementById('debug-info');
+            if (debugEl && debugEl.textContent === '状態: ページ読み込み中...') {
+                safeInit();
+            }
+        }, 3000);
     </script>
 </body>
 </html>
