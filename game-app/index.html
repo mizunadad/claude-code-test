@@ -19,20 +19,33 @@
     <meta name="apple-mobile-web-app-title" content="2048">
 </head>
 <body>
-    <div class="container">
-        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
-            <h1 style="font-size: 48px; font-weight: bold; color: #776e65; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); margin: 0;">2048</h1>
-            <div style="display: flex; gap: 12px;">
-                <div style="background: #bbada0; border-radius: 8px; padding: 8px 16px; text-align: center; min-width: 80px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                    <div style="font-size: 12px; font-weight: bold; color: #eee4da; text-transform: uppercase; letter-spacing: 0.5px;">スコア</div>
-                    <div style="font-size: 20px; font-weight: bold; color: white; margin-top: 2px;" id="score">0</div>
-                </div>
-                <div style="background: #bbada0; border-radius: 8px; padding: 8px 16px; text-align: center; min-width: 80px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                    <div style="font-size: 12px; font-weight: bold; color: #eee4da; text-transform: uppercase; letter-spacing: 0.5px;">ベスト</div>
-                    <div style="font-size: 20px; font-weight: bold; color: white; margin-top: 2px;" id="best-score">0</div>
-                </div>
+    <!-- テスト表示 -->
+    <div style="background: red; color: white; padding: 10px; text-align: center; font-size: 24px; margin: 10px;">
+        テスト: ヘッダーとスコア表示テスト v2024062403
+    </div>
+    
+    <div style="width: 90%; max-width: 500px; background: rgba(255, 255, 255, 0.95); border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); position: relative; margin: 0 auto;">
+        <!-- ヘッダーテスト -->
+        <div style="background: blue; color: white; padding: 15px; margin: 10px 0; text-align: center;">
+            <h1 style="margin: 0; font-size: 60px; color: yellow;">2048 ゲーム</h1>
+        </div>
+        
+        <!-- スコア表示テスト -->
+        <div style="background: green; color: white; padding: 15px; margin: 10px 0; display: flex; justify-content: center; gap: 20px;">
+            <div style="background: black; padding: 15px; border-radius: 10px; text-align: center;">
+                <div style="color: orange; font-weight: bold;">スコア</div>
+                <div style="font-size: 30px; color: white;" id="score">999</div>
             </div>
-        </header>
+            <div style="background: black; padding: 15px; border-radius: 10px; text-align: center;">
+                <div style="color: orange; font-weight: bold;">ベスト</div>
+                <div style="font-size: 30px; color: white;" id="best-score">9999</div>
+            </div>
+        </div>
+        
+        <!-- 新しいゲームボタンテスト -->
+        <div style="background: purple; color: white; padding: 15px; margin: 10px 0; text-align: center;">
+            <button style="background: orange; color: black; border: none; padding: 20px 40px; font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer;" id="restart-btn" onclick="window.gameUI && window.gameUI.restartGame()">新しいゲーム</button>
+        </div>
 
         <div style="text-align: center; margin-bottom: 24px;">
             <p style="font-size: 16px; margin-bottom: 16px; color: #776e65;">タイルを動かして <strong>2048</strong> を作ろう！</p>
