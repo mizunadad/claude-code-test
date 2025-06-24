@@ -210,9 +210,12 @@ class GameUI {
     makeMove(direction) {
         if (game?.isAnimating || game?.gameEnded) return;
         
+        console.log('Making move:', direction);
         const result = game.move(direction);
+        console.log('Move result:', result);
         
         if (!result) {
+            console.log('No move possible');
             return;
         }
         
