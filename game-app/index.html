@@ -37,15 +37,15 @@
             </div>
         </div>
 
-        <!-- ゲーム操作用矢印ボタン -->
-        <div style="background: rgba(255,255,255,0.9); padding: 20px; text-align: center; margin: 20px 0; border-radius: 12px;">
-            <div style="margin-bottom: 10px;">
-                <button id="arrow-up" data-direction="up" style="width: 70px; height: 70px; background: #8f7a66; color: white; border: none; border-radius: 12px; font-size: 28px; margin: 5px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">↑</button>
-            </div>
-            <div>
-                <button id="arrow-left" data-direction="left" style="width: 70px; height: 70px; background: #8f7a66; color: white; border: none; border-radius: 12px; font-size: 28px; margin: 5px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">←</button>
-                <button id="arrow-down" data-direction="down" style="width: 70px; height: 70px; background: #8f7a66; color: white; border: none; border-radius: 12px; font-size: 28px; margin: 5px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">↓</button>
-                <button id="arrow-right" data-direction="right" style="width: 70px; height: 70px; background: #8f7a66; color: white; border: none; border-radius: 12px; font-size: 28px; margin: 5px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">→</button>
+        <h1 style="color: red; text-align: center; font-size: 50px;">テストメッセージ</h1>
+        
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; background: red; padding: 30px; border: 5px solid black;">
+            <h2 style="color: white; margin: 0 0 20px 0;">矢印ボタン</h2>
+            <button onclick="window.gameUI && window.gameUI.makeMove('up')" style="display: block; width: 100px; height: 100px; background: blue; color: white; border: none; font-size: 40px; margin: 10px auto;">↑</button>
+            <div style="text-align: center;">
+                <button onclick="window.gameUI && window.gameUI.makeMove('left')" style="width: 100px; height: 100px; background: blue; color: white; border: none; font-size: 40px; margin: 10px;">←</button>
+                <button onclick="window.gameUI && window.gameUI.makeMove('down')" style="width: 100px; height: 100px; background: blue; color: white; border: none; font-size: 40px; margin: 10px;">↓</button>
+                <button onclick="window.gameUI && window.gameUI.makeMove('right')" style="width: 100px; height: 100px; background: blue; color: white; border: none; font-size: 40px; margin: 10px;">→</button>
             </div>
         </div>
 
