@@ -48,24 +48,34 @@ class GameUI {
         this.restartButton.addEventListener('click', () => this.restartGame());
         this.tryAgainButton.addEventListener('click', () => this.restartGame());
         
-        // 矢印キーボタン操作
-        const arrowButtons = document.querySelectorAll('.arrow-btn');
-        arrowButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                const direction = button.getAttribute('data-direction');
-                console.log('Arrow button clicked:', direction);
-                this.makeMove(direction);
-            });
-            
-            // タッチイベントも追加（より確実な動作のため）
-            button.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const direction = button.getAttribute('data-direction');
-                console.log('Arrow button touched:', direction);
-                this.makeMove(direction);
-            });
+        // 矢印キーボタン操作 - IDで直接取得
+        const arrowUp = document.getElementById('arrow-up');
+        const arrowDown = document.getElementById('arrow-down');
+        const arrowLeft = document.getElementById('arrow-left');
+        const arrowRight = document.getElementById('arrow-right');
+        
+        const buttons = [arrowUp, arrowDown, arrowLeft, arrowRight];
+        
+        buttons.forEach(button => {
+            if (button) {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const direction = button.getAttribute('data-direction');
+                    console.log('Arrow button clicked:', direction);
+                    this.makeMove(direction);
+                });
+                
+                // タッチイベントも追加
+                button.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const direction = button.getAttribute('data-direction');
+                    console.log('Arrow button touched:', direction);
+                    this.makeMove(direction);
+                });
+            } else {
+                console.error('Arrow button not found');
+            }
         });
         
         // iOS Safari対応
