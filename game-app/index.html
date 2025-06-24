@@ -20,24 +20,24 @@
 </head>
 <body>
     <div class="container">
-        <header class="header">
-            <h1 class="title">2048</h1>
-            <div class="score-container">
-                <div class="score-box">
-                    <div class="score-label">スコア</div>
-                    <div class="score" id="score">0</div>
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+            <h1 style="font-size: 48px; font-weight: bold; color: #776e65; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); margin: 0;">2048</h1>
+            <div style="display: flex; gap: 12px;">
+                <div style="background: #bbada0; border-radius: 8px; padding: 8px 16px; text-align: center; min-width: 80px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                    <div style="font-size: 12px; font-weight: bold; color: #eee4da; text-transform: uppercase; letter-spacing: 0.5px;">スコア</div>
+                    <div style="font-size: 20px; font-weight: bold; color: white; margin-top: 2px;" id="score">0</div>
                 </div>
-                <div class="score-box">
-                    <div class="score-label">ベスト</div>
-                    <div class="score" id="best-score">0</div>
+                <div style="background: #bbada0; border-radius: 8px; padding: 8px 16px; text-align: center; min-width: 80px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                    <div style="font-size: 12px; font-weight: bold; color: #eee4da; text-transform: uppercase; letter-spacing: 0.5px;">ベスト</div>
+                    <div style="font-size: 20px; font-weight: bold; color: white; margin-top: 2px;" id="best-score">0</div>
                 </div>
             </div>
         </header>
 
-        <div class="game-intro">
-            <p>タイルを動かして <strong>2048</strong> を作ろう！</p>
-            <div class="controls">
-                <button class="restart-button" id="restart-btn">新しいゲーム</button>
+        <div style="text-align: center; margin-bottom: 24px;">
+            <p style="font-size: 16px; margin-bottom: 16px; color: #776e65;">タイルを動かして <strong>2048</strong> を作ろう！</p>
+            <div style="display: flex; justify-content: center; gap: 12px;">
+                <button style="background: #8f7a66; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.15s ease; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);" id="restart-btn" onclick="window.gameUI && window.gameUI.restartGame()">新しいゲーム</button>
             </div>
         </div>
 
@@ -52,7 +52,7 @@
                 <button onclick="window.gameUI && window.gameUI.makeMove('down')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;">↓</button>
                 <button onclick="window.gameUI && window.gameUI.makeMove('right')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;">→</button>
             </div>
-            <p style="margin: 15px 0 0 0; color: #999; font-size: 12px;">v2024062401</p>
+            <p style="margin: 15px 0 0 0; color: #999; font-size: 12px;">v2024062402</p>
         </div>
 
         <div class="game-container">
