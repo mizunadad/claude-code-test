@@ -45,13 +45,6 @@
             <button id="restart-game-btn" style="background: #8f7a66; color: white; border: none; border-radius: 6px; padding: 8px 16px; font-size: 14px; font-weight: bold; cursor: pointer;">新しいゲーム</button>
         </div>
         
-        <!-- 基本動作テスト -->
-        <div style="background: yellow; padding: 10px; margin: 10px 0; border: 2px solid red;">
-            <h3 style="margin: 0; color: red;">動作テスト</h3>
-            <button id="test-btn" style="background: green; color: white; padding: 15px; margin: 5px; border: none; border-radius: 5px; font-size: 16px; touch-action: manipulation;">テストボタン</button>
-            <p style="margin: 5px 0; color: black; font-weight: bold;">このメッセージが見える場合、HTMLは正常です</p>
-            <p id="test-result" style="margin: 5px 0; color: blue; font-weight: bold;">ボタンをタッチしてください</p>
-        </div>
         
         <!-- デバッグ情報 -->
         <div id="debug-info" style="background: #f0f0f0; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px; color: #666;">
@@ -293,27 +286,6 @@
                 }
                 
                 updateStatus('JavaScript動作中');
-                
-                // テストボタンの設定
-                const testBtn = document.getElementById('test-btn');
-                const testResult = document.getElementById('test-result');
-                
-                if (testBtn && testResult) {
-                    testBtn.addEventListener('click', function() {
-                        testResult.textContent = 'ボタンが正常に動作しました！';
-                        testResult.style.color = 'green';
-                        updateStatus('テストボタン動作確認');
-                    });
-                    
-                    // タッチイベントも追加（モバイル用）
-                    testBtn.addEventListener('touchend', function(e) {
-                        e.preventDefault();
-                        testResult.textContent = 'タッチ操作が正常に動作しました！';
-                        testResult.style.color = 'green';
-                        updateStatus('タッチ操作確認');
-                    });
-                }
-                
                 updateStatus('初期化完了');
             
             // 簡単な2048ゲーム
@@ -341,25 +313,40 @@
                 const container = document.getElementById('tile-container');
                 if (container) {
                     container.innerHTML = '';
+                    
+                    // コンテナサイズを取得
+                    const gridContainer = document.getElementById('grid-container');
+                    if (!gridContainer) return;
+                    
+                    const containerRect = gridContainer.getBoundingClientRect();
+                    const containerSize = Math.min(containerRect.width, containerRect.height);
+                    const cellSize = (containerSize - 40) / 4; // 40px = padding + gaps
+                    const gap = 8;
+                    
                     for (let r = 0; r < 4; r++) {
                         for (let c = 0; c < 4; c++) {
                             if (grid[r][c] !== 0) {
                                 const tile = document.createElement('div');
                                 tile.textContent = grid[r][c];
+                                
+                                const x = c * (cellSize + gap) + gap;
+                                const y = r * (cellSize + gap) + gap;
+                                
                                 tile.style.cssText = `
                                     position: absolute;
-                                    width: 70px;
-                                    height: 70px;
+                                    width: ${cellSize}px;
+                                    height: ${cellSize}px;
                                     background: #eee4da;
                                     border-radius: 6px;
                                     display: flex;
                                     align-items: center;
                                     justify-content: center;
                                     font-weight: bold;
-                                    font-size: 24px;
+                                    font-size: ${Math.min(cellSize / 3, 24)}px;
                                     color: #776e65;
-                                    left: ${c * 80 + 10}px;
-                                    top: ${r * 80 + 10}px;
+                                    left: ${x}px;
+                                    top: ${y}px;
+                                    transition: all 0.15s ease-in-out;
                                 `;
                                 container.appendChild(tile);
                             }
