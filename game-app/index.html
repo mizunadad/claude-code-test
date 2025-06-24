@@ -19,53 +19,40 @@
     <meta name="apple-mobile-web-app-title" content="2048">
 </head>
 <body>
-    <!-- テスト表示 -->
-    <div style="background: red; color: white; padding: 10px; text-align: center; font-size: 24px; margin: 10px;">
-        テスト: ヘッダーとスコア表示テスト v2024062403
-    </div>
-    
-    <div style="width: 90%; max-width: 500px; background: rgba(255, 255, 255, 0.95); border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); position: relative; margin: 0 auto;">
-        <!-- ヘッダーテスト -->
-        <div style="background: blue; color: white; padding: 15px; margin: 10px 0; text-align: center;">
-            <h1 style="margin: 0; font-size: 60px; color: yellow;">2048 ゲーム</h1>
-        </div>
+    <div style="width: 90%; max-width: 400px; background: rgba(255, 255, 255, 0.95); border-radius: 16px; padding: 16px; margin: 10px auto; overflow-y: auto; max-height: 100vh;">
         
-        <!-- スコア表示テスト -->
-        <div style="background: green; color: white; padding: 15px; margin: 10px 0; display: flex; justify-content: center; gap: 20px;">
-            <div style="background: black; padding: 15px; border-radius: 10px; text-align: center;">
-                <div style="color: orange; font-weight: bold;">スコア</div>
-                <div style="font-size: 30px; color: white;" id="score">999</div>
-            </div>
-            <div style="background: black; padding: 15px; border-radius: 10px; text-align: center;">
-                <div style="color: orange; font-weight: bold;">ベスト</div>
-                <div style="font-size: 30px; color: white;" id="best-score">9999</div>
-            </div>
-        </div>
-        
-        <!-- 新しいゲームボタンテスト -->
-        <div style="background: purple; color: white; padding: 15px; margin: 10px 0; text-align: center;">
-            <button style="background: orange; color: black; border: none; padding: 20px 40px; font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer;" id="restart-btn" onclick="window.gameUI && window.gameUI.restartGame()">新しいゲーム</button>
-        </div>
-
-        <div style="text-align: center; margin-bottom: 24px;">
-            <p style="font-size: 16px; margin-bottom: 16px; color: #776e65;">タイルを動かして <strong>2048</strong> を作ろう！</p>
-            <div style="display: flex; justify-content: center; gap: 12px;">
-                <button style="background: #8f7a66; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.15s ease; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);" id="restart-btn" onclick="window.gameUI && window.gameUI.restartGame()">新しいゲーム</button>
+        <!-- ヘッダー: タイトルとスコア -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap;">
+            <h1 style="font-size: 32px; font-weight: bold; color: #776e65; margin: 0;">2048</h1>
+            <div style="display: flex; gap: 8px;">
+                <div style="background: #bbada0; border-radius: 6px; padding: 6px 12px; text-align: center; min-width: 60px;">
+                    <div style="font-size: 10px; font-weight: bold; color: #eee4da;">スコア</div>
+                    <div style="font-size: 16px; font-weight: bold; color: white;" id="current-score">0</div>
+                </div>
+                <div style="background: #bbada0; border-radius: 6px; padding: 6px 12px; text-align: center; min-width: 60px;">
+                    <div style="font-size: 10px; font-weight: bold; color: #eee4da;">ベスト</div>
+                    <div style="font-size: 16px; font-weight: bold; color: white;" id="current-best-score">0</div>
+                </div>
             </div>
         </div>
 
-        <!-- 矢印ボタン - 最終更新: 2024-06-24 15:30 -->
-        <div style="background: rgba(255,255,255,0.95); padding: 20px; text-align: center; margin: 20px auto; border-radius: 12px; max-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid #8f7a66;">
-            <p style="margin: 0 0 15px 0; color: #8f7a66; font-size: 14px; font-weight: bold;">ゲーム操作</p>
-            <div style="margin-bottom: 10px;">
-                <button onclick="window.gameUI && window.gameUI.makeMove('up')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;">↑</button>
+        <!-- 説明と新しいゲームボタン -->
+        <div style="text-align: center; margin-bottom: 16px;">
+            <p style="font-size: 14px; margin-bottom: 12px; color: #776e65;">タイルを動かして <strong>2048</strong> を作ろう！</p>
+            <button style="background: #8f7a66; color: white; border: none; border-radius: 6px; padding: 8px 16px; font-size: 14px; font-weight: bold; cursor: pointer;" onclick="window.gameUI && window.gameUI.restartGame()">新しいゲーム</button>
+        </div>
+
+        <!-- 矢印ボタン -->
+        <div style="background: rgba(255,255,255,0.9); padding: 12px; text-align: center; margin: 12px 0; border-radius: 8px; border: 1px solid #8f7a66;">
+            <p style="margin: 0 0 8px 0; color: #8f7a66; font-size: 12px; font-weight: bold;">ゲーム操作</p>
+            <div style="margin-bottom: 6px;">
+                <button onclick="window.gameUI && window.gameUI.makeMove('up')" style="width: 50px; height: 50px; background: #8f7a66; color: white; border: none; border-radius: 6px; font-size: 20px; cursor: pointer;">↑</button>
             </div>
-            <div style="display: flex; justify-content: center; gap: 10px;">
-                <button onclick="window.gameUI && window.gameUI.makeMove('left')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;">←</button>
-                <button onclick="window.gameUI && window.gameUI.makeMove('down')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;">↓</button>
-                <button onclick="window.gameUI && window.gameUI.makeMove('right')" style="width: 60px; height: 60px; background: #8f7a66; color: white; border: none; border-radius: 8px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;">→</button>
+            <div style="display: flex; justify-content: center; gap: 6px;">
+                <button onclick="window.gameUI && window.gameUI.makeMove('left')" style="width: 50px; height: 50px; background: #8f7a66; color: white; border: none; border-radius: 6px; font-size: 20px; cursor: pointer;">←</button>
+                <button onclick="window.gameUI && window.gameUI.makeMove('down')" style="width: 50px; height: 50px; background: #8f7a66; color: white; border: none; border-radius: 6px; font-size: 20px; cursor: pointer;">↓</button>
+                <button onclick="window.gameUI && window.gameUI.makeMove('right')" style="width: 50px; height: 50px; background: #8f7a66; color: white; border: none; border-radius: 6px; font-size: 20px; cursor: pointer;">→</button>
             </div>
-            <p style="margin: 15px 0 0 0; color: #999; font-size: 12px;">v2024062402</p>
         </div>
 
         <div class="game-container">
@@ -147,6 +134,23 @@
         window.forceReload = function() {
             window.location.reload(true);
         };
+        
+        // スコア更新関数
+        window.updateScoreDisplay = function(score, bestScore) {
+            const currentScoreEl = document.getElementById('current-score');
+            const currentBestScoreEl = document.getElementById('current-best-score');
+            if (currentScoreEl) currentScoreEl.textContent = score || 0;
+            if (currentBestScoreEl) currentBestScoreEl.textContent = bestScore || 0;
+        };
+        
+        // ページ読み込み後にスコア更新
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                if (window.game) {
+                    window.updateScoreDisplay(window.game.score, window.gameStorage ? window.gameStorage.getBestScore() : 0);
+                }
+            }, 1000);
+        });
     </script>
     
     <script src="js/utils.js?v=2024062401"></script>

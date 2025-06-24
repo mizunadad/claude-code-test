@@ -248,17 +248,40 @@ class GameUI {
     
     // スコア更新
     updateScore() {
-        this.scoreElement.textContent = formatNumber(game.score);
-        this.scoreElement.classList.add('score-increase');
-        setTimeout(() => {
-            this.scoreElement.classList.remove('score-increase');
-        }, 300);
+        const score = game.score;
+        // 複数のスコア要素を更新
+        if (this.scoreElement) {
+            this.scoreElement.textContent = formatNumber(score);
+            this.scoreElement.classList.add('score-increase');
+            setTimeout(() => {
+                this.scoreElement.classList.remove('score-increase');
+            }, 300);
+        }
+        
+        // 新しいスコア要素も更新
+        const currentScoreEl = document.getElementById('current-score');
+        if (currentScoreEl) {
+            currentScoreEl.textContent = formatNumber(score);
+        }
+        
+        // グローバル関数でも更新
+        if (window.updateScoreDisplay) {
+            window.updateScoreDisplay(score, gameStorage.getBestScore());
+        }
     }
     
     // ベストスコア更新
     updateBestScore() {
         const bestScore = gameStorage.getBestScore();
-        this.bestScoreElement.textContent = formatNumber(bestScore);
+        if (this.bestScoreElement) {
+            this.bestScoreElement.textContent = formatNumber(bestScore);
+        }
+        
+        // 新しいベストスコア要素も更新
+        const currentBestScoreEl = document.getElementById('current-best-score');
+        if (currentBestScoreEl) {
+            currentBestScoreEl.textContent = formatNumber(bestScore);
+        }
     }
     
     // 勝利メッセージの表示
