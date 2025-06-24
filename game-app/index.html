@@ -311,48 +311,50 @@
             // グリッド表示更新
             function updateGrid() {
                 const container = document.getElementById('tile-container');
-                if (container) {
-                    container.innerHTML = '';
-                    
-                    // コンテナサイズを取得
-                    const gridContainer = document.getElementById('grid-container');
-                    if (!gridContainer) return;
-                    
-                    const containerRect = gridContainer.getBoundingClientRect();
-                    const containerSize = Math.min(containerRect.width, containerRect.height);
-                    const cellSize = (containerSize - 40) / 4; // 40px = padding + gaps
-                    const gap = 8;
-                    
-                    for (let r = 0; r < 4; r++) {
-                        for (let c = 0; c < 4; c++) {
-                            if (grid[r][c] !== 0) {
-                                const tile = document.createElement('div');
-                                tile.textContent = grid[r][c];
-                                
-                                const x = c * (cellSize + gap) + gap;
-                                const y = r * (cellSize + gap) + gap;
-                                
-                                tile.style.cssText = `
-                                    position: absolute;
-                                    width: ${cellSize}px;
-                                    height: ${cellSize}px;
-                                    background: #eee4da;
-                                    border-radius: 6px;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    font-weight: bold;
-                                    font-size: ${Math.min(cellSize / 3, 24)}px;
-                                    color: #776e65;
-                                    left: ${x}px;
-                                    top: ${y}px;
-                                    transition: all 0.15s ease-in-out;
-                                `;
-                                container.appendChild(tile);
-                            }
+                if (!container) return;
+                
+                container.innerHTML = '';
+                
+                // 固定サイズで計算（CSSと一致させる）
+                const gameContainer = container.parentElement;
+                if (!gameContainer) return;
+                
+                const containerRect = gameContainer.getBoundingClientRect();
+                const containerSize = Math.min(containerRect.width, containerRect.height);
+                const cellSize = (containerSize - 32) / 4; // 32px = padding(16px) + gaps
+                const gap = 8;
+                
+                for (let r = 0; r < 4; r++) {
+                    for (let c = 0; c < 4; c++) {
+                        if (grid[r][c] !== 0) {
+                            const tile = document.createElement('div');
+                            tile.textContent = grid[r][c];
+                            
+                            // 位置計算を調整
+                            const x = c * (cellSize + gap) + 8; // 左上のpadding分を加算
+                            const y = r * (cellSize + gap) + 8; // 左上のpadding分を加算
+                            
+                            tile.style.cssText = `
+                                position: absolute;
+                                width: ${cellSize}px;
+                                height: ${cellSize}px;
+                                background: #eee4da;
+                                border-radius: 6px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-weight: bold;
+                                font-size: ${Math.min(cellSize / 2.5, 28)}px;
+                                color: #776e65;
+                                left: ${x}px;
+                                top: ${y}px;
+                                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                            `;
+                            container.appendChild(tile);
                         }
                     }
                 }
+            }
                 
                 // スコア更新
                 const scoreEl = document.getElementById('current-score');
@@ -362,24 +364,97 @@
             // 移動処理
             function makeMove(direction) {
                 updateStatus('移動: ' + direction);
-                // 簡単な移動ロジック（完全版ではありませんが動作確認用）
                 let moved = false;
+                let newGrid = grid.map(row => [...row]); // ディープコピー
                 
                 if (direction === 'left') {
                     for (let r = 0; r < 4; r++) {
-                        const row = grid[r].filter(val => val !== 0);
+                        const row = newGrid[r].filter(val => val !== 0);
+                        // マージ処理
+                        for (let i = 0; i < row.length - 1; i++) {
+                            if (row[i] === row[i + 1]) {
+                                row[i] *= 2;
+                                score += row[i];
+                                row.splice(i + 1, 1);
+                            }
+                        }
                         while (row.length < 4) row.push(0);
-                        if (JSON.stringify(row) !== JSON.stringify(grid[r])) {
-                            moved = true;
-                            grid[r] = row;
+                        newGrid[r] = row;
+                    }
+                } else if (direction === 'right') {
+                    for (let r = 0; r < 4; r++) {
+                        const row = newGrid[r].filter(val => val !== 0);
+                        // マージ処理（右から）
+                        for (let i = row.length - 1; i > 0; i--) {
+                            if (row[i] === row[i - 1]) {
+                                row[i] *= 2;
+                                score += row[i];
+                                row.splice(i - 1, 1);
+                                i--;
+                            }
+                        }
+                        while (row.length < 4) row.unshift(0);
+                        newGrid[r] = row;
+                    }
+                } else if (direction === 'up') {
+                    for (let c = 0; c < 4; c++) {
+                        const col = [];
+                        for (let r = 0; r < 4; r++) {
+                            if (newGrid[r][c] !== 0) col.push(newGrid[r][c]);
+                        }
+                        // マージ処理
+                        for (let i = 0; i < col.length - 1; i++) {
+                            if (col[i] === col[i + 1]) {
+                                col[i] *= 2;
+                                score += col[i];
+                                col.splice(i + 1, 1);
+                            }
+                        }
+                        while (col.length < 4) col.push(0);
+                        for (let r = 0; r < 4; r++) {
+                            newGrid[r][c] = col[r];
+                        }
+                    }
+                } else if (direction === 'down') {
+                    for (let c = 0; c < 4; c++) {
+                        const col = [];
+                        for (let r = 0; r < 4; r++) {
+                            if (newGrid[r][c] !== 0) col.push(newGrid[r][c]);
+                        }
+                        // マージ処理（下から）
+                        for (let i = col.length - 1; i > 0; i--) {
+                            if (col[i] === col[i - 1]) {
+                                col[i] *= 2;
+                                score += col[i];
+                                col.splice(i - 1, 1);
+                                i--;
+                            }
+                        }
+                        while (col.length < 4) col.unshift(0);
+                        for (let r = 0; r < 4; r++) {
+                            newGrid[r][c] = col[r];
                         }
                     }
                 }
                 
+                // 移動があったかチェック
+                for (let r = 0; r < 4; r++) {
+                    for (let c = 0; c < 4; c++) {
+                        if (grid[r][c] !== newGrid[r][c]) {
+                            moved = true;
+                            break;
+                        }
+                    }
+                    if (moved) break;
+                }
+                
                 if (moved) {
+                    grid = newGrid;
                     addRandomTile();
                     updateGrid();
-                    score += 10;
+                    updateStatus('移動完了 - スコア: ' + score);
+                } else {
+                    updateStatus('移動できません');
                 }
             }
             
@@ -400,9 +475,23 @@
             buttons.forEach(function(btn) {
                 const element = document.getElementById(btn.id);
                 if (element) {
+                    updateStatus('ボタン設定: ' + btn.id);
+                    
+                    // クリックイベント
                     element.addEventListener('click', function() {
+                        updateStatus('クリック: ' + btn.direction);
                         makeMove(btn.direction);
                     });
+                    
+                    // タッチイベント
+                    element.addEventListener('touchend', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        updateStatus('タッチ: ' + btn.direction);
+                        makeMove(btn.direction);
+                    });
+                } else {
+                    updateStatus('ボタンが見つかりません: ' + btn.id);
                 }
             });
             
