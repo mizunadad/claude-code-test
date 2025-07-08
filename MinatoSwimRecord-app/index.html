@@ -10,7 +10,6 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -528,11 +527,21 @@
                             </select>
                         </div>
                     </div>
+                    
+                    <!-- デバッグ情報表示エリア -->
+                    <div id="debug-info" style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 12px; display: none;">
+                        <strong>デバッグ情報:</strong><br>
+                        <span id="debug-content">Chart.js読み込み状況確認中...</span>
+                    </div>
+                    
+                    <button onclick="testChart()" class="btn" style="margin-top: 10px; font-size: 14px;">📊 グラフ機能テスト</button>
                 </div>
 
                 <!-- グラフエリア -->
                 <div class="chart-container" style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: none;">
-                    <canvas id="recordChart" width="400" height="200"></canvas>
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="recordChart"></canvas>
+                    </div>
                 </div>
 
                 <!-- アドバイスエリア -->
@@ -898,134 +907,260 @@
         // グラフ変数
         let recordChart = null;
 
+        // デバッグ・テスト関数
+        function testChart() {
+            const debugDiv = document.getElementById('debug-info');
+            const debugContent = document.getElementById('debug-content');
+            debugDiv.style.display = 'block';
+            
+            let debug = '';
+            
+            // Chart.js の確認
+            if (typeof Chart !== 'undefined') {
+                debug += '✅ Chart.js 読み込み成功<br>';
+                debug += `Chart.js バージョン: ${Chart.version}<br>`;
+            } else {
+                debug += '❌ Chart.js が読み込まれていません<br>';
+            }
+            
+            // Canvas要素の確認
+            const canvas = document.getElementById('recordChart');
+            if (canvas) {
+                debug += '✅ Canvas要素あり<br>';
+                debug += `Canvas サイズ: ${canvas.width}x${canvas.height}<br>`;
+            } else {
+                debug += '❌ Canvas要素が見つかりません<br>';
+            }
+            
+            // レコードデータの確認
+            debug += `📊 総記録数: ${records.length}<br>`;
+            debug += `バタフライ50m短水路: ${records.filter(r => r.種目 === 'バタフライ' && r.距離 === '50' && r.プール === '短水路').length}件<br>`;
+            
+            // 簡単なテストグラフ作成
+            if (typeof Chart !== 'undefined' && canvas) {
+                try {
+                    if (recordChart) recordChart.destroy();
+                    
+                    recordChart = new Chart(canvas.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: ['1月', '2月', '3月'],
+                            datasets: [{
+                                label: 'テストデータ',
+                                data: [30, 28, 26],
+                                borderColor: '#2563eb',
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'テストグラフ'
+                                }
+                            }
+                        }
+                    });
+                    
+                    document.querySelector('.chart-container').style.display = 'block';
+                    debug += '✅ テストグラフ作成成功！<br>';
+                } catch (error) {
+                    debug += `❌ グラフ作成エラー: ${error.message}<br>`;
+                }
+            }
+            
+            debugContent.innerHTML = debug;
+        }
+
         // グラフ更新関数
         function updateChart() {
-            const stroke = document.getElementById('chart-stroke').value;
-            const distance = document.getElementById('chart-distance').value;
-            const pool = document.getElementById('chart-pool').value;
+            try {
+                const stroke = document.getElementById('chart-stroke').value;
+                const distance = document.getElementById('chart-distance').value;
+                const pool = document.getElementById('chart-pool').value;
 
-            if (!stroke || !distance) {
-                document.querySelector('.chart-container').style.display = 'none';
-                document.getElementById('advice-section').style.display = 'none';
-                return;
-            }
+                if (!stroke || !distance) {
+                    document.querySelector('.chart-container').style.display = 'none';
+                    document.getElementById('advice-section').style.display = 'none';
+                    return;
+                }
 
-            // データフィルタリング
-            let filteredRecords = records.filter(record => 
-                record.種目 === stroke && record.距離 === distance
-            );
-
-            if (pool) {
-                filteredRecords = filteredRecords.filter(record => record.プール === pool);
-            }
-
-            // 長水路選択時は短水路データも取得
-            let shortCourseRecords = [];
-            if (pool === '長水路') {
-                shortCourseRecords = records.filter(record => 
-                    record.種目 === stroke && record.距離 === distance && record.プール === '短水路'
+                // データフィルタリング
+                let filteredRecords = records.filter(record => 
+                    record.種目 === stroke && record.距離 === distance
                 );
+
+                if (pool) {
+                    filteredRecords = filteredRecords.filter(record => record.プール === pool);
+                }
+
+                // 長水路選択時は短水路データも取得
+                let shortCourseRecords = [];
+                if (pool === '長水路') {
+                    shortCourseRecords = records.filter(record => 
+                        record.種目 === stroke && record.距離 === distance && record.プール === '短水路'
+                    );
+                }
+
+                if (filteredRecords.length === 0 && shortCourseRecords.length === 0) {
+                    document.querySelector('.chart-container').style.display = 'none';
+                    document.getElementById('advice-section').style.display = 'none';
+                    
+                    // データなしメッセージ表示
+                    const debugDiv = document.getElementById('debug-info');
+                    const debugContent = document.getElementById('debug-content');
+                    debugDiv.style.display = 'block';
+                    debugContent.innerHTML = `❌ ${stroke} ${distance}m ${pool || 'すべて'} のデータが見つかりません`;
+                    return;
+                }
+
+                // デバッグ情報を隠す
+                document.getElementById('debug-info').style.display = 'none';
+
+                // データソート（日付順）
+                filteredRecords.sort((a, b) => new Date(a.日付) - new Date(b.日付));
+                shortCourseRecords.sort((a, b) => new Date(a.日付) - new Date(b.日付));
+
+                // グラフデータ準備
+                const datasets = [];
+
+                if (filteredRecords.length > 0) {
+                    datasets.push({
+                        label: `${stroke} ${distance}m (${pool || 'All'})`,
+                        data: filteredRecords.map(record => ({
+                            x: record.日付,
+                            y: parseFloat(record.タイム)
+                        })),
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        fill: false,
+                        tension: 0.1
+                    });
+                }
+
+                if (shortCourseRecords.length > 0 && pool === '長水路') {
+                    datasets.push({
+                        label: `${stroke} ${distance}m (短水路参考)`,
+                        data: shortCourseRecords.map(record => ({
+                            x: record.日付,
+                            y: parseFloat(record.タイム)
+                        })),
+                        borderColor: '#dc2626',
+                        backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                        fill: false,
+                        tension: 0.1,
+                        borderDash: [5, 5]
+                    });
+                }
+
+                // グラフ作成
+                const success = createChart(datasets);
+                
+                if (success) {
+                    // アドバイス生成
+                    generateAdvice(stroke, distance, pool, filteredRecords);
+
+                    // 表示
+                    document.querySelector('.chart-container').style.display = 'block';
+                    document.getElementById('advice-section').style.display = 'block';
+                }
+                
+            } catch (error) {
+                console.error('updateChart エラー:', error);
+                const debugDiv = document.getElementById('debug-info');
+                const debugContent = document.getElementById('debug-content');
+                debugDiv.style.display = 'block';
+                debugContent.innerHTML = `❌ グラフ更新エラー: ${error.message}`;
             }
-
-            if (filteredRecords.length === 0 && shortCourseRecords.length === 0) {
-                document.querySelector('.chart-container').style.display = 'none';
-                document.getElementById('advice-section').style.display = 'none';
-                return;
-            }
-
-            // データソート（日付順）
-            filteredRecords.sort((a, b) => new Date(a.日付) - new Date(b.日付));
-            shortCourseRecords.sort((a, b) => new Date(a.日付) - new Date(b.日付));
-
-            // グラフデータ準備
-            const datasets = [];
-
-            if (filteredRecords.length > 0) {
-                datasets.push({
-                    label: `${stroke} ${distance}m (${pool || 'All'})`,
-                    data: filteredRecords.map(record => ({
-                        x: record.日付,
-                        y: parseFloat(record.タイム)
-                    })),
-                    borderColor: '#2563eb',
-                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                    fill: false,
-                    tension: 0.1
-                });
-            }
-
-            if (shortCourseRecords.length > 0 && pool === '長水路') {
-                datasets.push({
-                    label: `${stroke} ${distance}m (短水路参考)`,
-                    data: shortCourseRecords.map(record => ({
-                        x: record.日付,
-                        y: parseFloat(record.タイム)
-                    })),
-                    borderColor: '#dc2626',
-                    backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                    fill: false,
-                    tension: 0.1,
-                    borderDash: [5, 5]
-                });
-            }
-
-            // グラフ作成
-            createChart(datasets);
-
-            // アドバイス生成
-            generateAdvice(stroke, distance, pool, filteredRecords);
-
-            // 表示
-            document.querySelector('.chart-container').style.display = 'block';
-            document.getElementById('advice-section').style.display = 'block';
         }
 
         function createChart(datasets) {
-            const ctx = document.getElementById('recordChart').getContext('2d');
-            
-            if (recordChart) {
-                recordChart.destroy();
-            }
+            try {
+                const ctx = document.getElementById('recordChart').getContext('2d');
+                
+                if (recordChart) {
+                    recordChart.destroy();
+                }
 
-            recordChart = new Chart(ctx, {
-                type: 'line',
-                data: { datasets },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: '記録推移グラフ'
-                        },
-                        legend: {
-                            display: true
+                // データセットを簡単なラベル形式に変換
+                const labels = [];
+                const processedDatasets = [];
+
+                datasets.forEach(dataset => {
+                    const processedData = dataset.data.map(point => {
+                        const date = new Date(point.x);
+                        const label = `${date.getMonth() + 1}/${date.getDate()}`;
+                        if (!labels.includes(label)) {
+                            labels.push(label);
                         }
+                        return point.y;
+                    });
+
+                    processedDatasets.push({
+                        ...dataset,
+                        data: processedData
+                    });
+                });
+
+                // ラベルをソート
+                const sortedIndices = labels
+                    .map((label, index) => ({ label, index }))
+                    .sort((a, b) => {
+                        const dateA = new Date(`2024/${a.label}`);
+                        const dateB = new Date(`2024/${b.label}`);
+                        return dateA - dateB;
+                    })
+                    .map(item => item.index);
+
+                const sortedLabels = sortedIndices.map(i => labels[i]);
+                processedDatasets.forEach(dataset => {
+                    const sortedData = sortedIndices.map(i => dataset.data[i]);
+                    dataset.data = sortedData;
+                });
+
+                recordChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: sortedLabels,
+                        datasets: processedDatasets
                     },
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                parser: 'YYYY-MM-DD',
-                                displayFormats: {
-                                    day: 'MM/DD',
-                                    month: 'YYYY/MM'
-                                }
-                            },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
                             title: {
                                 display: true,
-                                text: '日付'
+                                text: '記録推移グラフ'
+                            },
+                            legend: {
+                                display: true
                             }
                         },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'タイム (秒)'
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: '日付'
+                                }
                             },
-                            reverse: true // タイムは小さい方が良いので逆順
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'タイム (秒)'
+                                },
+                                reverse: true // タイムは小さい方が良いので逆順
+                            }
                         }
                     }
-                }
-            });
+                });
+                
+                return true;
+            } catch (error) {
+                console.error('グラフ作成エラー:', error);
+                document.getElementById('debug-content').innerHTML += `<br>❌ グラフ作成エラー: ${error.message}`;
+                return false;
+            }
         }
 
         function generateAdvice(stroke, distance, pool, records) {
