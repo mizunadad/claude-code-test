@@ -8,12 +8,11 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>🏊‍♂️ MinatoSwimRecord - 競泳記録管理アプリ - 🔥UPDATE-1400🔥</title>
+    <title>🏊‍♂️ MinatoSwimRecord - 競泳記録管理アプリ - 🚀FIXED-1415🚀</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -905,6 +904,15 @@
             document.getElementById('date').valueAsDate = new Date();
         });
 
+        // Service Worker無効化（キャッシュ問題解決のため）
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+
         // タッチ操作改善
         document.addEventListener('touchstart', function() {}, {passive: true});
         document.addEventListener('touchmove', function() {}, {passive: true});
@@ -1168,24 +1176,77 @@
 
         function createChart(datasets) {
             try {
+                console.log('createChart開始, datasets:', datasets);
+                
                 // Chart.jsの全インスタンスをクリア
-                Chart.helpers.each(Chart.instances, function(instance) {
-                    instance.destroy();
-                });
+                if (Chart.instances) {
+                    Chart.helpers.each(Chart.instances, function(instance) {
+                        instance.destroy();
+                    });
+                }
                 
                 // recordChartをnullに設定
                 recordChart = null;
 
                 // Canvas要素を完全にリセット
                 const chartContainer = document.querySelector('.chart-container div');
+                if (!chartContainer) {
+                    console.error('Chart container not found');
+                    return false;
+                }
+                
                 chartContainer.innerHTML = '<canvas id="recordChart"></canvas>';
                 
                 const canvas = document.getElementById('recordChart');
+                if (!canvas) {
+                    console.error('Canvas element not found');
+                    return false;
+                }
+                
                 const ctx = canvas.getContext('2d');
+                console.log('Canvas準備完了');
+
+                // データセットを単純な形式に変換
+                const labels = [];
+                const processedDatasets = [];
+                
+                datasets.forEach(dataset => {
+                    const processedData = dataset.data.map(point => {
+                        const date = new Date(point.x);
+                        const label = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+                        if (!labels.includes(label)) {
+                            labels.push(label);
+                        }
+                        return {
+                            label: label,
+                            value: point.y
+                        };
+                    });
+                    
+                    processedDatasets.push({
+                        ...dataset,
+                        processedData: processedData
+                    });
+                });
+                
+                // ラベルをソート
+                const sortedLabels = labels.sort((a, b) => new Date(a) - new Date(b));
+                
+                // 各データセットを整理
+                const finalDatasets = processedDatasets.map(dataset => ({
+                    ...dataset,
+                    data: sortedLabels.map(label => {
+                        const dataPoint = dataset.processedData.find(p => p.label === label);
+                        return dataPoint ? dataPoint.value : null;
+                    })
+                }));
 
                 recordChart = new Chart(ctx, {
                     type: 'line',
-                    data: { datasets },
+                    data: {
+                        labels: sortedLabels,
+                        datasets: finalDatasets
+                    },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
@@ -1200,16 +1261,6 @@
                         },
                         scales: {
                             x: {
-                                type: 'time',
-                                time: {
-                                    parser: 'YYYY-MM-DD',
-                                    displayFormats: {
-                                        day: 'MM/DD',
-                                        month: 'YYYY/MM',
-                                        year: 'YYYY'
-                                    },
-                                    tooltipFormat: 'YYYY/MM/DD'
-                                },
                                 title: {
                                     display: true,
                                     text: '日付'
@@ -1220,7 +1271,7 @@
                                     display: true,
                                     text: 'タイム'
                                 },
-                                reverse: false, // 下側ほど小さな値（良いタイム）になるよう修正
+                                reverse: false,
                                 ticks: {
                                     callback: function(value) {
                                         return formatSecondsToTime(value);
@@ -1231,10 +1282,15 @@
                     }
                 });
                 
+                console.log('Chart作成成功');
+                
                 return true;
             } catch (error) {
                 console.error('グラフ作成エラー:', error);
-                document.getElementById('debug-content').innerHTML += `<br>❌ グラフ作成エラー: ${error.message}`;
+                const debugDiv = document.getElementById('debug-info');
+                const debugContent = document.getElementById('debug-content');
+                debugDiv.style.display = 'block';
+                debugContent.innerHTML = `❌ グラフ作成エラー: ${error.message}<br>詳細: ${error.stack}`;
                 return false;
             }
         }
