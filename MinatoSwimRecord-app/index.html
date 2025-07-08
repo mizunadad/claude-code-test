@@ -908,6 +908,39 @@
         // グラフ変数
         let recordChart = null;
 
+        // タイム変換関数（分:秒形式を秒数に変換）
+        function parseTimeToSeconds(timeString) {
+            if (!timeString) return 0;
+            
+            // 既に秒数の場合（小数点を含む数値）
+            if (/^\d+(\.\d+)?$/.test(timeString)) {
+                return parseFloat(timeString);
+            }
+            
+            // 分:秒形式の場合（例: "01:00.08" または "1:30.45"）
+            const timeMatch = timeString.match(/^(\d{1,2}):(\d{2})\.?(\d{2})?$/);
+            if (timeMatch) {
+                const minutes = parseInt(timeMatch[1], 10);
+                const seconds = parseInt(timeMatch[2], 10);
+                const hundredths = timeMatch[3] ? parseInt(timeMatch[3], 10) : 0;
+                return minutes * 60 + seconds + hundredths / 100;
+            }
+            
+            // その他の形式（例: "26.15"）
+            return parseFloat(timeString) || 0;
+        }
+
+        // 秒数を分:秒形式に変換（表示用）
+        function formatSecondsToTime(seconds) {
+            if (seconds < 60) {
+                return seconds.toFixed(2) + '秒';
+            } else {
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                return `${minutes}:${remainingSeconds.toFixed(2).padStart(5, '0')}`;
+            }
+        }
+
         // デバッグ・テスト関数
         function testChart() {
             const debugDiv = document.getElementById('debug-info');
@@ -940,7 +973,11 @@
             // 簡単なテストグラフ作成
             if (typeof Chart !== 'undefined' && canvas) {
                 try {
-                    if (recordChart) recordChart.destroy();
+                    // 既存のChartインスタンスを完全に破棄
+                    if (recordChart) {
+                        recordChart.destroy();
+                        recordChart = null;
+                    }
                     
                     recordChart = new Chart(canvas.getContext('2d'), {
                         type: 'line',
@@ -1037,7 +1074,7 @@
                         label: `${stroke} ${distance}m (${pool || 'All'})`,
                         data: filteredRecords.map(record => ({
                             x: record.日付,
-                            y: parseFloat(record.タイム)
+                            y: parseTimeToSeconds(record.タイム)
                         })),
                         borderColor: '#2563eb',
                         backgroundColor: 'rgba(37, 99, 235, 0.1)',
@@ -1052,7 +1089,7 @@
                         label: `${stroke} ${distance}m (${compareLabel})`,
                         data: compareRecords.map(record => ({
                             x: record.日付,
-                            y: parseFloat(record.タイム)
+                            y: parseTimeToSeconds(record.タイム)
                         })),
                         borderColor: '#dc2626',
                         backgroundColor: 'rgba(220, 38, 38, 0.1)',
@@ -1085,11 +1122,14 @@
 
         function createChart(datasets) {
             try {
-                const ctx = document.getElementById('recordChart').getContext('2d');
-                
+                // 既存のChartインスタンスを完全に破棄
                 if (recordChart) {
                     recordChart.destroy();
+                    recordChart = null;
                 }
+
+                const canvas = document.getElementById('recordChart');
+                const ctx = canvas.getContext('2d');
 
                 recordChart = new Chart(ctx, {
                     type: 'line',
@@ -1126,9 +1166,14 @@
                             y: {
                                 title: {
                                     display: true,
-                                    text: 'タイム (秒)'
+                                    text: 'タイム'
                                 },
-                                reverse: false // 下側ほど小さな値（良いタイム）になるよう修正
+                                reverse: false, // 下側ほど小さな値（良いタイム）になるよう修正
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatSecondsToTime(value);
+                                    }
+                                }
                             }
                         }
                     }
@@ -1145,10 +1190,10 @@
         function generateAdvice(stroke, distance, pool, records) {
             if (records.length === 0) return;
 
-            const bestTime = Math.min(...records.map(r => parseFloat(r.タイム)));
-            const latestTime = parseFloat(records[records.length - 1].タイム);
+            const bestTime = Math.min(...records.map(r => parseTimeToSeconds(r.タイム)));
+            const latestTime = parseTimeToSeconds(records[records.length - 1].タイム);
             const improvement = records.length > 1 ? 
-                parseFloat(records[0].タイム) - parseFloat(records[records.length - 1].タイム) : 0;
+                parseTimeToSeconds(records[0].タイム) - parseTimeToSeconds(records[records.length - 1].タイム) : 0;
 
             let advice = `<div style="line-height: 1.6;">`;
             
@@ -1179,8 +1224,8 @@
             const currentStroke = strokeAdvice[stroke] || strokeAdvice['自由形'];
             
             advice += `<p><strong>🎯 ${stroke} ${distance}m の分析結果</strong></p>`;
-            advice += `<p>📈 ベストタイム: <span style="color: #059669; font-weight: bold;">${bestTime}秒</span></p>`;
-            advice += `<p>📊 直近のタイム: <span style="color: #2563eb; font-weight: bold;">${latestTime}秒</span></p>`;
+            advice += `<p>📈 ベストタイム: <span style="color: #059669; font-weight: bold;">${formatSecondsToTime(bestTime)}</span></p>`;
+            advice += `<p>📊 直近のタイム: <span style="color: #2563eb; font-weight: bold;">${formatSecondsToTime(latestTime)}</span></p>`;
             
             if (improvement > 0) {
                 advice += `<p>🚀 総合向上幅: <span style="color: #059669; font-weight: bold;">-${improvement.toFixed(2)}秒</span> すごい成長です！</p>`;
