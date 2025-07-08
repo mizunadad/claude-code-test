@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#2563eb">
     <meta name="description" content="競泳記録管理・分析・目標設定アプリケーション">
-    <title>🏊‍♂️ MinatoSwimRecord - 競泳記録管理アプリ</title>
+    <title>🏊‍♂️ MinatoSwimRecord - 競泳記録管理アプリ - 202501081245</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -979,7 +979,19 @@
                         recordChart = null;
                     }
                     
-                    recordChart = new Chart(canvas.getContext('2d'), {
+                    // Canvas要素を完全にリセット
+                    const chartContainer = document.querySelector('.chart-container div');
+                    const oldCanvas = document.getElementById('recordChart');
+                    if (oldCanvas) {
+                        oldCanvas.remove();
+                    }
+                    
+                    // 新しいCanvas要素を作成
+                    const newCanvas = document.createElement('canvas');
+                    newCanvas.id = 'recordChart';
+                    chartContainer.appendChild(newCanvas);
+                    
+                    recordChart = new Chart(newCanvas.getContext('2d'), {
                         type: 'line',
                         data: {
                             labels: ['1月', '2月', '3月'],
@@ -1128,8 +1140,19 @@
                     recordChart = null;
                 }
 
-                const canvas = document.getElementById('recordChart');
-                const ctx = canvas.getContext('2d');
+                // Canvas要素を完全にリセット
+                const chartContainer = document.querySelector('.chart-container div');
+                const oldCanvas = document.getElementById('recordChart');
+                if (oldCanvas) {
+                    oldCanvas.remove();
+                }
+                
+                // 新しいCanvas要素を作成
+                const newCanvas = document.createElement('canvas');
+                newCanvas.id = 'recordChart';
+                chartContainer.appendChild(newCanvas);
+                
+                const ctx = newCanvas.getContext('2d');
 
                 recordChart = new Chart(ctx, {
                     type: 'line',
