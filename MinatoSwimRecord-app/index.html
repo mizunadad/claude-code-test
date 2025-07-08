@@ -8,7 +8,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>🏊‍♂️ MinatoSwimRecord - 競泳記録管理アプリ - 202501081355</title>
+    <title>🏊‍♂️ MinatoSwimRecord - 競泳記録管理アプリ - 🔥UPDATE-1400🔥</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -539,6 +539,7 @@
                     </div>
                     
                     <button onclick="testChart()" class="btn" style="margin-top: 10px; font-size: 14px;">📊 グラフ機能テスト</button>
+                    <button onclick="clearCache()" class="btn" style="margin-top: 10px; margin-left: 10px; font-size: 14px; background: #dc2626;">🔄 キャッシュクリア</button>
                 </div>
 
                 <!-- グラフエリア -->
@@ -944,6 +945,27 @@
             }
         }
 
+        // キャッシュクリア関数
+        function clearCache() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for(let registration of registrations) {
+                        registration.unregister();
+                    }
+                });
+            }
+            
+            if ('caches' in window) {
+                caches.keys().then(function(names) {
+                    names.forEach(function(name) {
+                        caches.delete(name);
+                    });
+                });
+            }
+            
+            alert('キャッシュをクリアしました。ページを再読み込みしてください。');
+        }
+
         // デバッグ・テスト関数
         function testChart() {
             const debugDiv = document.getElementById('debug-info');
@@ -1065,7 +1087,7 @@
                     const debugDiv = document.getElementById('debug-info');
                     const debugContent = document.getElementById('debug-content');
                     debugDiv.style.display = 'block';
-                    debugContent.innerHTML = `❌ ${stroke} ${distance}m ${pool || 'すべて'} のデータが見つかりません`;
+                    debugContent.innerHTML = `❌ ${stroke} ${distance}m ${pool || 'すべて'} のデータが見つかりません<br>フィルタ後: ${filteredRecords.length}件, 比較: ${compareRecords.length}件`;
                     return;
                 }
 
@@ -1119,6 +1141,20 @@
                     // 表示
                     document.querySelector('.chart-container').style.display = 'block';
                     document.getElementById('advice-section').style.display = 'block';
+                    
+                    // 成功メッセージ（デバッグ用）
+                    const debugDiv = document.getElementById('debug-info');
+                    const debugContent = document.getElementById('debug-content');
+                    debugDiv.style.display = 'block';
+                    debugContent.innerHTML = `✅ グラフ作成成功！ データ: ${filteredRecords.length}件`;
+                    setTimeout(() => {
+                        debugDiv.style.display = 'none';
+                    }, 3000);
+                } else {
+                    const debugDiv = document.getElementById('debug-info');
+                    const debugContent = document.getElementById('debug-content');
+                    debugDiv.style.display = 'block';
+                    debugContent.innerHTML = `❌ グラフ作成に失敗しました`;
                 }
                 
             } catch (error) {

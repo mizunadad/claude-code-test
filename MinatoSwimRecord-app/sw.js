@@ -1,4 +1,4 @@
-const CACHE_NAME = 'minato-swim-record-v1';
+const CACHE_NAME = 'minato-swim-record-v2-1400';
 const urlsToCache = [
   '/',
   '/index.html',
