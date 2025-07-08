@@ -10,6 +10,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -995,15 +996,21 @@
                     filteredRecords = filteredRecords.filter(record => record.プール === pool);
                 }
 
-                // 長水路選択時は短水路データも取得
-                let shortCourseRecords = [];
+                // プール選択に応じて対比データを取得
+                let compareRecords = [];
                 if (pool === '長水路') {
-                    shortCourseRecords = records.filter(record => 
+                    // 長水路選択時は短水路データも取得
+                    compareRecords = records.filter(record => 
                         record.種目 === stroke && record.距離 === distance && record.プール === '短水路'
+                    );
+                } else if (pool === '短水路') {
+                    // 短水路選択時は長水路データも取得
+                    compareRecords = records.filter(record => 
+                        record.種目 === stroke && record.距離 === distance && record.プール === '長水路'
                     );
                 }
 
-                if (filteredRecords.length === 0 && shortCourseRecords.length === 0) {
+                if (filteredRecords.length === 0 && compareRecords.length === 0) {
                     document.querySelector('.chart-container').style.display = 'none';
                     document.getElementById('advice-section').style.display = 'none';
                     
@@ -1020,7 +1027,7 @@
 
                 // データソート（日付順）
                 filteredRecords.sort((a, b) => new Date(a.日付) - new Date(b.日付));
-                shortCourseRecords.sort((a, b) => new Date(a.日付) - new Date(b.日付));
+                compareRecords.sort((a, b) => new Date(a.日付) - new Date(b.日付));
 
                 // グラフデータ準備
                 const datasets = [];
@@ -1039,10 +1046,11 @@
                     });
                 }
 
-                if (shortCourseRecords.length > 0 && pool === '長水路') {
+                if (compareRecords.length > 0) {
+                    const compareLabel = pool === '長水路' ? '短水路参考' : '長水路参考';
                     datasets.push({
-                        label: `${stroke} ${distance}m (短水路参考)`,
-                        data: shortCourseRecords.map(record => ({
+                        label: `${stroke} ${distance}m (${compareLabel})`,
+                        data: compareRecords.map(record => ({
                             x: record.日付,
                             y: parseFloat(record.タイム)
                         })),
@@ -1083,48 +1091,9 @@
                     recordChart.destroy();
                 }
 
-                // データセットを簡単なラベル形式に変換
-                const labels = [];
-                const processedDatasets = [];
-
-                datasets.forEach(dataset => {
-                    const processedData = dataset.data.map(point => {
-                        const date = new Date(point.x);
-                        const label = `${date.getMonth() + 1}/${date.getDate()}`;
-                        if (!labels.includes(label)) {
-                            labels.push(label);
-                        }
-                        return point.y;
-                    });
-
-                    processedDatasets.push({
-                        ...dataset,
-                        data: processedData
-                    });
-                });
-
-                // ラベルをソート
-                const sortedIndices = labels
-                    .map((label, index) => ({ label, index }))
-                    .sort((a, b) => {
-                        const dateA = new Date(`2024/${a.label}`);
-                        const dateB = new Date(`2024/${b.label}`);
-                        return dateA - dateB;
-                    })
-                    .map(item => item.index);
-
-                const sortedLabels = sortedIndices.map(i => labels[i]);
-                processedDatasets.forEach(dataset => {
-                    const sortedData = sortedIndices.map(i => dataset.data[i]);
-                    dataset.data = sortedData;
-                });
-
                 recordChart = new Chart(ctx, {
                     type: 'line',
-                    data: {
-                        labels: sortedLabels,
-                        datasets: processedDatasets
-                    },
+                    data: { datasets },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
@@ -1139,6 +1108,16 @@
                         },
                         scales: {
                             x: {
+                                type: 'time',
+                                time: {
+                                    parser: 'YYYY-MM-DD',
+                                    displayFormats: {
+                                        day: 'MM/DD',
+                                        month: 'YYYY/MM',
+                                        year: 'YYYY'
+                                    },
+                                    tooltipFormat: 'YYYY/MM/DD'
+                                },
                                 title: {
                                     display: true,
                                     text: '日付'
@@ -1149,7 +1128,7 @@
                                     display: true,
                                     text: 'タイム (秒)'
                                 },
-                                reverse: true // タイムは小さい方が良いので逆順
+                                reverse: false // 下側ほど小さな値（良いタイム）になるよう修正
                             }
                         }
                     }
