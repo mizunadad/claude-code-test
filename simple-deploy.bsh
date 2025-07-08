@@ -19,7 +19,8 @@ echo "🕒 実行時刻: $(date '+%Y-%m-%d %H:%M:%S')"
 # COMMIT_MESSAGE="Update API error handling and user feedback"
 # COMMIT_MESSAGE="Improve weather icons and animations"
 # 
-COMMIT_MESSAGE="re-modified 2048 puzzle game to project"
+#COMMIT_MESSAGE="re-modified 2048 puzzle game to project"
+ COMMIT_MESSAGE="upload swim Record app"
 # 
 # ================================================
 
@@ -87,6 +88,11 @@ REPO_NAME=$(echo "$REPO_URL" | sed 's/.*\///g' | sed 's/\.git//g')
 echo ""
 echo "📱 アプリURL:"
 echo "   https://$USERNAME.github.io/$REPO_NAME/"
+
+if [ -d MinatoSwimRecord-app ]; then
+    echo "   https://$USERNAME.github.io/$REPO_NAME/MinatoSwimRecord-app/"
+fi
+
 echo "   https://$USERNAME.github.io/$REPO_NAME/weather-app/"
 
 if [ -d game-app ]; then
