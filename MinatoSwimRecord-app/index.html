@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#2563eb">
     <meta name="description" content="競泳記録管理・分析・目標設定アプリケーション">
-    <title>🏊‍♂️ MinatoSwimRecord - 競泳記録管理アプリ - 202501081245</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>🏊‍♂️ MinatoSwimRecord - 競泳記録管理アプリ - 202501081355</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -971,27 +974,22 @@
             debug += `バタフライ50m短水路: ${records.filter(r => r.種目 === 'バタフライ' && r.距離 === '50' && r.プール === '短水路').length}件<br>`;
             
             // 簡単なテストグラフ作成
-            if (typeof Chart !== 'undefined' && canvas) {
+            if (typeof Chart !== 'undefined') {
                 try {
-                    // 既存のChartインスタンスを完全に破棄
-                    if (recordChart) {
-                        recordChart.destroy();
-                        recordChart = null;
-                    }
+                    // Chart.jsの全インスタンスをクリア
+                    Chart.helpers.each(Chart.instances, function(instance) {
+                        instance.destroy();
+                    });
+                    
+                    // recordChartをnullに設定
+                    recordChart = null;
                     
                     // Canvas要素を完全にリセット
                     const chartContainer = document.querySelector('.chart-container div');
-                    const oldCanvas = document.getElementById('recordChart');
-                    if (oldCanvas) {
-                        oldCanvas.remove();
-                    }
+                    chartContainer.innerHTML = '<canvas id="recordChart"></canvas>';
                     
-                    // 新しいCanvas要素を作成
-                    const newCanvas = document.createElement('canvas');
-                    newCanvas.id = 'recordChart';
-                    chartContainer.appendChild(newCanvas);
-                    
-                    recordChart = new Chart(newCanvas.getContext('2d'), {
+                    const canvas = document.getElementById('recordChart');
+                    recordChart = new Chart(canvas.getContext('2d'), {
                         type: 'line',
                         data: {
                             labels: ['1月', '2月', '3月'],
@@ -1134,25 +1132,20 @@
 
         function createChart(datasets) {
             try {
-                // 既存のChartインスタンスを完全に破棄
-                if (recordChart) {
-                    recordChart.destroy();
-                    recordChart = null;
-                }
+                // Chart.jsの全インスタンスをクリア
+                Chart.helpers.each(Chart.instances, function(instance) {
+                    instance.destroy();
+                });
+                
+                // recordChartをnullに設定
+                recordChart = null;
 
                 // Canvas要素を完全にリセット
                 const chartContainer = document.querySelector('.chart-container div');
-                const oldCanvas = document.getElementById('recordChart');
-                if (oldCanvas) {
-                    oldCanvas.remove();
-                }
+                chartContainer.innerHTML = '<canvas id="recordChart"></canvas>';
                 
-                // 新しいCanvas要素を作成
-                const newCanvas = document.createElement('canvas');
-                newCanvas.id = 'recordChart';
-                chartContainer.appendChild(newCanvas);
-                
-                const ctx = newCanvas.getContext('2d');
+                const canvas = document.getElementById('recordChart');
+                const ctx = canvas.getContext('2d');
 
                 recordChart = new Chart(ctx, {
                     type: 'line',
