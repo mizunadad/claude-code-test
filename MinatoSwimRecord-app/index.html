@@ -9,6 +9,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -492,6 +494,53 @@
 
             <div id="analysis" class="tab-content">
                 <h2>📈 分析</h2>
+                
+                <!-- グラフ選択フォーム -->
+                <div class="chart-controls" style="background: rgba(255,255,255,0.9); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3>📊 記録グラフ設定</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="chart-stroke">種目</label>
+                            <select id="chart-stroke" onchange="updateChart()">
+                                <option value="">種目を選択</option>
+                                <option value="バタフライ">バタフライ</option>
+                                <option value="自由形">自由形</option>
+                                <option value="背泳ぎ">背泳ぎ</option>
+                                <option value="平泳ぎ">平泳ぎ</option>
+                                <option value="個人メドレー">個人メドレー</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="chart-distance">距離</label>
+                            <select id="chart-distance" onchange="updateChart()">
+                                <option value="">距離を選択</option>
+                                <option value="50">50m</option>
+                                <option value="100">100m</option>
+                                <option value="200">200m</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="chart-pool">プール</label>
+                            <select id="chart-pool" onchange="updateChart()">
+                                <option value="">プールを選択</option>
+                                <option value="短水路">短水路</option>
+                                <option value="長水路">長水路</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- グラフエリア -->
+                <div class="chart-container" style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: none;">
+                    <canvas id="recordChart" width="400" height="200"></canvas>
+                </div>
+
+                <!-- アドバイスエリア -->
+                <div id="advice-section" style="background: rgba(255,255,255,0.9); padding: 20px; border-radius: 10px; margin-bottom: 20px; display: none;">
+                    <h3>💪 応援メッセージ</h3>
+                    <div id="advice-content"></div>
+                </div>
+
                 <div id="analysis-content">
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -845,6 +894,201 @@
         // タッチ操作改善
         document.addEventListener('touchstart', function() {}, {passive: true});
         document.addEventListener('touchmove', function() {}, {passive: true});
+
+        // グラフ変数
+        let recordChart = null;
+
+        // グラフ更新関数
+        function updateChart() {
+            const stroke = document.getElementById('chart-stroke').value;
+            const distance = document.getElementById('chart-distance').value;
+            const pool = document.getElementById('chart-pool').value;
+
+            if (!stroke || !distance) {
+                document.querySelector('.chart-container').style.display = 'none';
+                document.getElementById('advice-section').style.display = 'none';
+                return;
+            }
+
+            // データフィルタリング
+            let filteredRecords = records.filter(record => 
+                record.種目 === stroke && record.距離 === distance
+            );
+
+            if (pool) {
+                filteredRecords = filteredRecords.filter(record => record.プール === pool);
+            }
+
+            // 長水路選択時は短水路データも取得
+            let shortCourseRecords = [];
+            if (pool === '長水路') {
+                shortCourseRecords = records.filter(record => 
+                    record.種目 === stroke && record.距離 === distance && record.プール === '短水路'
+                );
+            }
+
+            if (filteredRecords.length === 0 && shortCourseRecords.length === 0) {
+                document.querySelector('.chart-container').style.display = 'none';
+                document.getElementById('advice-section').style.display = 'none';
+                return;
+            }
+
+            // データソート（日付順）
+            filteredRecords.sort((a, b) => new Date(a.日付) - new Date(b.日付));
+            shortCourseRecords.sort((a, b) => new Date(a.日付) - new Date(b.日付));
+
+            // グラフデータ準備
+            const datasets = [];
+
+            if (filteredRecords.length > 0) {
+                datasets.push({
+                    label: `${stroke} ${distance}m (${pool || 'All'})`,
+                    data: filteredRecords.map(record => ({
+                        x: record.日付,
+                        y: parseFloat(record.タイム)
+                    })),
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    fill: false,
+                    tension: 0.1
+                });
+            }
+
+            if (shortCourseRecords.length > 0 && pool === '長水路') {
+                datasets.push({
+                    label: `${stroke} ${distance}m (短水路参考)`,
+                    data: shortCourseRecords.map(record => ({
+                        x: record.日付,
+                        y: parseFloat(record.タイム)
+                    })),
+                    borderColor: '#dc2626',
+                    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                    fill: false,
+                    tension: 0.1,
+                    borderDash: [5, 5]
+                });
+            }
+
+            // グラフ作成
+            createChart(datasets);
+
+            // アドバイス生成
+            generateAdvice(stroke, distance, pool, filteredRecords);
+
+            // 表示
+            document.querySelector('.chart-container').style.display = 'block';
+            document.getElementById('advice-section').style.display = 'block';
+        }
+
+        function createChart(datasets) {
+            const ctx = document.getElementById('recordChart').getContext('2d');
+            
+            if (recordChart) {
+                recordChart.destroy();
+            }
+
+            recordChart = new Chart(ctx, {
+                type: 'line',
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '記録推移グラフ'
+                        },
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                parser: 'YYYY-MM-DD',
+                                displayFormats: {
+                                    day: 'MM/DD',
+                                    month: 'YYYY/MM'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: '日付'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'タイム (秒)'
+                            },
+                            reverse: true // タイムは小さい方が良いので逆順
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateAdvice(stroke, distance, pool, records) {
+            if (records.length === 0) return;
+
+            const bestTime = Math.min(...records.map(r => parseFloat(r.タイム)));
+            const latestTime = parseFloat(records[records.length - 1].タイム);
+            const improvement = records.length > 1 ? 
+                parseFloat(records[0].タイム) - parseFloat(records[records.length - 1].タイム) : 0;
+
+            let advice = `<div style="line-height: 1.6;">`;
+            
+            // 種目別アドバイス
+            const strokeAdvice = {
+                'バタフライ': {
+                    tips: ['ストリームラインを意識して！', 'キックのタイミングがポイント！', '肩の柔軟性を高めよう！'],
+                    motivation: '美しいバタフライで水面を制覇しよう！🦋'
+                },
+                '自由形': {
+                    tips: ['ストローク数をカウントしてみよう！', 'キャッチをしっかりと！', 'ターンのスピードアップを目指そう！'],
+                    motivation: 'スピードの王様、自由形で風のように泳ごう！🌊'
+                },
+                '背泳ぎ': {
+                    tips: ['体の軸をまっすぐに！', 'フラッグからの距離感を掴もう！', '腰の位置を高く保とう！'],
+                    motivation: '空を見ながら、最高のタイムを目指そう！☁️'
+                },
+                '平泳ぎ': {
+                    tips: ['一掻き一蹴りを大切に！', 'ストリームラインの時間を長く！', 'タイミングが命！'],
+                    motivation: '技術の平泳ぎ、美しいフォームで勝負！🐸'
+                },
+                '個人メドレー': {
+                    tips: ['各種目のつなぎを意識して！', 'ペース配分が重要！', '最後まで諦めない心を！'],
+                    motivation: 'オールラウンダーの証、IM で総合力を見せつけよう！🏆'
+                }
+            };
+
+            const currentStroke = strokeAdvice[stroke] || strokeAdvice['自由形'];
+            
+            advice += `<p><strong>🎯 ${stroke} ${distance}m の分析結果</strong></p>`;
+            advice += `<p>📈 ベストタイム: <span style="color: #059669; font-weight: bold;">${bestTime}秒</span></p>`;
+            advice += `<p>📊 直近のタイム: <span style="color: #2563eb; font-weight: bold;">${latestTime}秒</span></p>`;
+            
+            if (improvement > 0) {
+                advice += `<p>🚀 総合向上幅: <span style="color: #059669; font-weight: bold;">-${improvement.toFixed(2)}秒</span> すごい成長です！</p>`;
+            } else if (improvement < 0) {
+                advice += `<p>💪 まだまだ伸びしろがあります！次こそベスト更新だ！</p>`;
+            }
+            
+            advice += `<br><p><strong>💡 ${stroke}のコツ</strong></p>`;
+            advice += `<p>・${currentStroke.tips[Math.floor(Math.random() * currentStroke.tips.length)]}</p>`;
+            
+            advice += `<br><p style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; margin-top: 15px;">`;
+            advice += `${currentStroke.motivation}`;
+            advice += `</p>`;
+            
+            advice += `<p style="text-align: center; margin-top: 10px; color: #666; font-style: italic;">`;
+            advice += `練習は裏切らない。今日もベストを尽くそう！✨`;
+            advice += `</p>`;
+            
+            advice += `</div>`;
+
+            document.getElementById('advice-content').innerHTML = advice;
+        }
     </script>
 </body>
 </html>
