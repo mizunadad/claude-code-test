@@ -1,9 +1,10 @@
-const CACHE_NAME = 'minato-swim-record-v2-1400';
+const CACHE_NAME = 'minato-swim-record-v2-1401';
 const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icon-192.png'
+  '/icon-192.png',
+  'https://cdn.jsdelivr.net/npm/chart.js'
 ];
 
 // インストール時
@@ -20,37 +21,38 @@ self.addEventListener('install', (event) => {
 // フェッチ時
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
+    // ネットワーク優先、キャッシュフォールバック戦略
+    fetch(event.request)
       .then((response) => {
-        // キャッシュにある場合はそれを返す
-        if (response) {
-          return response;
+        // レスポンスが有効な場合
+        if (response && response.status === 200) {
+          // レスポンスをクローンしてキャッシュに保存
+          const responseToCache = response.clone();
+          
+          caches.open(CACHE_NAME)
+            .then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
         }
         
-        // キャッシュにない場合はネットワークから取得
-        return fetch(event.request).then(
-          (response) => {
-            // レスポンスが無効な場合
-            if (!response || response.status !== 200 || response.type !== 'basic') {
+        return response;
+      })
+      .catch(() => {
+        // ネットワークエラーの場合、キャッシュから取得
+        return caches.match(event.request)
+          .then((response) => {
+            if (response) {
               return response;
             }
-
-            // レスポンスをクローンしてキャッシュに保存
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
-          }
-        );
-      }).catch(() => {
-        // ネットワークエラーの場合、オフライン用ページを返す
-        if (event.request.destination === 'document') {
-          return caches.match('/index.html');
-        }
+            
+            // ドキュメントの場合はindex.htmlを返す
+            if (event.request.destination === 'document') {
+              return caches.match('/index.html');
+            }
+            
+            // その他の場合はエラーを投げる
+            throw new Error('Resource not found in cache');
+          });
       })
   );
 });

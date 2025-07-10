@@ -408,6 +408,12 @@
                         <option value="100">100m</option>
                         <option value="200">200m</option>
                     </select>
+                    <select id="filter-pool" onchange="filterRecords()">
+                        <option value="">全プール</option>
+                    </select>
+                    <select id="filter-competition" onchange="filterRecords()">
+                        <option value="">全大会</option>
+                    </select>
                 </div>
                 <div class="record-table-container">
                     <table class="record-table" id="records-table">
@@ -680,6 +686,11 @@
             } else if (tabName === 'dashboard') {
                 updateDashboard();
             } else if (tabName === 'analysis') {
+                // 分析タブに切り替わった時にグラフとメッセージをクリア
+                document.querySelector('.chart-container').style.display = 'none';
+                document.getElementById('advice-section').style.display = 'none';
+                document.getElementById('advice-content').innerHTML = '';
+                document.getElementById('debug-info').style.display = 'none';
                 updateAnalysis();
             } else if (tabName === 'data-manager') {
                 updateDataManager();
@@ -715,6 +726,8 @@
         function filterRecords() {
             const strokeFilter = document.getElementById('filter-stroke').value;
             const distanceFilter = document.getElementById('filter-distance').value;
+            const poolFilter = document.getElementById('filter-pool').value;
+            const competitionFilter = document.getElementById('filter-competition').value;
             
             let filtered = records;
             
@@ -724,6 +737,14 @@
             
             if (distanceFilter) {
                 filtered = filtered.filter(r => r.距離 === distanceFilter);
+            }
+            
+            if (poolFilter) {
+                filtered = filtered.filter(r => r.プール === poolFilter);
+            }
+            
+            if (competitionFilter) {
+                filtered = filtered.filter(r => r.大会名 === competitionFilter);
             }
             
             renderRecords(filtered);
@@ -1054,6 +1075,12 @@
         // グラフ更新関数
         function updateChart() {
             try {
+                // まず応援メッセージとグラフをクリア
+                document.querySelector('.chart-container').style.display = 'none';
+                document.getElementById('advice-section').style.display = 'none';
+                document.getElementById('advice-content').innerHTML = '';
+                document.getElementById('debug-info').style.display = 'none';
+
                 const stroke = document.getElementById('chart-stroke').value;
                 const distance = document.getElementById('chart-distance').value;
                 const pool = document.getElementById('chart-pool').value;
@@ -1061,6 +1088,8 @@
                 if (!stroke || !distance) {
                     document.querySelector('.chart-container').style.display = 'none';
                     document.getElementById('advice-section').style.display = 'none';
+                    // 応援メッセージをクリア
+                    document.getElementById('advice-content').innerHTML = '';
                     return;
                 }
 
@@ -1090,6 +1119,8 @@
                 if (filteredRecords.length === 0 && compareRecords.length === 0) {
                     document.querySelector('.chart-container').style.display = 'none';
                     document.getElementById('advice-section').style.display = 'none';
+                    // 応援メッセージをクリア
+                    document.getElementById('advice-content').innerHTML = '';
                     
                     // データなしメッセージ表示
                     const debugDiv = document.getElementById('debug-info');
@@ -1295,6 +1326,81 @@
             }
         }
 
+        // 最近の記録を分析する関数
+        function analyzeRecentRecords(records) {
+            if (records.length < 2) {
+                return {
+                    trend: 'initial',
+                    message: '記録がスタートしたばかり！これからの成長が楽しみですね！',
+                    detail: '最初の一歩が踏み出せました。継続は力なり、がんばりましょう！'
+                };
+            }
+
+            // 直近5回の記録を取得（日付順にソート済み）
+            const recentCount = Math.min(5, records.length);
+            const recentRecords = records.slice(-recentCount);
+            const times = recentRecords.map(r => parseTimeToSeconds(r.タイム));
+            
+            // 傾向分析
+            let improvements = 0;
+            let stable = 0;
+            let challenges = 0;
+            
+            for (let i = 1; i < times.length; i++) {
+                const diff = times[i-1] - times[i]; // 前回との差（正なら向上）
+                if (diff > 0.1) improvements++;
+                else if (Math.abs(diff) <= 0.1) stable++;
+                else challenges++;
+            }
+            
+            // 最新3回の平均と前の記録の比較
+            const latest3 = times.slice(-3);
+            const earlier3 = times.slice(-6, -3);
+            const latest3Avg = latest3.reduce((a, b) => a + b, 0) / latest3.length;
+            const earlier3Avg = earlier3.length > 0 ? earlier3.reduce((a, b) => a + b, 0) / earlier3.length : latest3Avg;
+            
+            // ベストタイムからの位置
+            const bestTime = Math.min(...times);
+            const latestTime = times[times.length - 1];
+            const gapFromBest = latestTime - bestTime;
+            
+            // ポジティブなメッセージ生成
+            let trend, message, detail;
+            
+            if (improvements >= challenges && latest3Avg <= earlier3Avg) {
+                trend = 'improving';
+                const messages = [
+                    '素晴らしい向上傾向です！継続した努力の成果が現れています！',
+                    '着実にタイムが縮まっています！この調子で更なる高みを目指しましょう！',
+                    '成長カーブが右肩上がりです！練習の質が向上している証拠ですね！'
+                ];
+                message = messages[Math.floor(Math.random() * messages.length)];
+                detail = gapFromBest < 1 ? 
+                    'ベストタイムに迫る素晴らしいコンディションです！' : 
+                    `ベストタイムまで${gapFromBest.toFixed(2)}秒。もう一押しでブレイクスルーです！`;
+            } else if (stable > improvements && stable > challenges) {
+                trend = 'stable';
+                const messages = [
+                    '安定したパフォーマンスを維持しています！この安定感が次の飛躍の基盤です！',
+                    'コンスタントに良いタイムをキープ！技術的な成熟を感じます！',
+                    '一定レベルの実力をしっかり維持！この安定性こそが競技者の証です！'
+                ];
+                message = messages[Math.floor(Math.random() * messages.length)];
+                detail = 'この安定感から一気にブレイクスルーする瞬間が必ず来ます！';
+            } else {
+                trend = 'challenging';
+                const messages = [
+                    '新しいチャレンジに取り組んでいる証拠です！挑戦は成長の源です！',
+                    'より高い目標に向かっている過程ですね！この経験が必ず活かされます！',
+                    '新しい技術や戦略を試行錯誤中！この積極性が成功への鍵です！'
+                ];
+                message = messages[Math.floor(Math.random() * messages.length)];
+                detail = 'チャレンジの先には必ず大きな成長が待っています！';
+            }
+            
+            return { trend, message, detail };
+        }
+
         function generateAdvice(stroke, distance, pool, records) {
             if (records.length === 0) return;
 
@@ -1302,6 +1408,9 @@
             const latestTime = parseTimeToSeconds(records[records.length - 1].タイム);
             const improvement = records.length > 1 ? 
                 parseTimeToSeconds(records[0].タイム) - parseTimeToSeconds(records[records.length - 1].タイム) : 0;
+
+            // 最近の記録分析
+            const recentAnalysis = analyzeRecentRecords(records);
 
             let advice = `<div style="line-height: 1.6;">`;
             
@@ -1340,6 +1449,24 @@
             } else if (improvement < 0) {
                 advice += `<p>💪 まだまだ伸びしろがあります！次こそベスト更新だ！</p>`;
             }
+
+            // 最近の記録分析セクションを追加
+            advice += `<br><div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6;">`;
+            advice += `<p><strong>🔍 最近の記録分析</strong></p>`;
+            advice += `<p style="color: #1e40af; font-weight: 600;">${recentAnalysis.message}</p>`;
+            advice += `<p style="color: #374151; font-size: 0.95em;">${recentAnalysis.detail}</p>`;
+            
+            // 記録数に応じた追加メッセージ
+            if (records.length >= 10) {
+                advice += `<p style="color: #059669; font-size: 0.9em; margin-top: 8px;">`;
+                advice += `🎖️ ${records.length}回の記録蓄積！継続的な努力の賜物です。`;
+                advice += `</p>`;
+            } else if (records.length >= 5) {
+                advice += `<p style="color: #0891b2; font-size: 0.9em; margin-top: 8px;">`;
+                advice += `📊 ${records.length}回の記録で傾向が見えてきました！`;
+                advice += `</p>`;
+            }
+            advice += `</div>`;
             
             advice += `<br><p><strong>💡 ${stroke}のコツ</strong></p>`;
             advice += `<p>・${currentStroke.tips[Math.floor(Math.random() * currentStroke.tips.length)]}</p>`;
@@ -1356,6 +1483,35 @@
 
             document.getElementById('advice-content').innerHTML = advice;
         }
+
+        // フィルターオプションを初期化
+        function populateFilters() {
+            // プールフィルターを初期化
+            const poolSelect = document.getElementById('filter-pool');
+            const pools = [...new Set(records.map(r => r.プール))].filter(p => p).sort();
+            pools.forEach(pool => {
+                const option = document.createElement('option');
+                option.value = pool;
+                option.textContent = pool;
+                poolSelect.appendChild(option);
+            });
+
+            // 大会名フィルターを初期化
+            const competitionSelect = document.getElementById('filter-competition');
+            const competitions = [...new Set(records.map(r => r.大会名))].filter(c => c).sort();
+            competitions.forEach(competition => {
+                const option = document.createElement('option');
+                option.value = competition;
+                option.textContent = competition;
+                competitionSelect.appendChild(option);
+            });
+        }
+
+        // ページ読み込み完了時にフィルターを初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // レコードデータが読み込まれた後にフィルターを初期化
+            setTimeout(populateFilters, 1000);
+        });
     </script>
 </body>
 </html>

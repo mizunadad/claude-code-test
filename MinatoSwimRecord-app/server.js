@@ -5,7 +5,7 @@ const fs = require('fs').promises;
 const bodyParser = require('body-parser');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -234,9 +234,10 @@ async function initializeServer() {
         console.log('⚠️  Data file not found, will be created on first write');
     }
     
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
         console.log(`🏊‍♂️ MinatoSwimRecord Server is running on port ${PORT}`);
         console.log(`📊 Access the app at: http://localhost:${PORT}`);
+        console.log(`📊 WSL2 Access: http://172.23.114.187:${PORT}`);
         console.log(`🔧 Health check: http://localhost:${PORT}/health`);
         console.log(`📁 Data file: ${DATA_FILE}`);
     });

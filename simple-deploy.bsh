@@ -20,8 +20,8 @@ echo "🕒 実行時刻: $(date '+%Y-%m-%d %H:%M:%S')"
 # COMMIT_MESSAGE="Improve weather icons and animations"
 # 
 #COMMIT_MESSAGE="re-modified 2048 puzzle game to project"
-# COMMIT_MESSAGE="upload swim Record app"
- COMMIT_MESSAGE="update modified swim Record app"
+#COMMIT_MESSAGE="upload swim Record app"
+COMMIT_MESSAGE="update modified swim Record app"
 # 
 # ================================================
 
