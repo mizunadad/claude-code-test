@@ -658,7 +658,14 @@
             const stored = localStorage.getItem('swimRecords');
             if (stored) {
                 const data = JSON.parse(stored);
-                records = data.records || [];
+                // データバージョンをチェックし、古い場合は強制的にAPIから再取得
+                if (!data.metadata || !data.metadata.version || data.records.length < 178) {
+                    console.log('データが古いため、APIから最新データを取得します');
+                    localStorage.removeItem('swimRecords');
+                    await loadFromAPI();
+                } else {
+                    records = data.records || [];
+                }
             } else {
                 // localStorageが空の場合はAPIからデータを取得
                 await loadFromAPI();
