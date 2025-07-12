@@ -674,13 +674,15 @@
 
         async function loadFromAPI() {
             try {
-                const response = await fetch('/api/records');
+                // GitHub Pages環境では直接JSONファイルを読み込み
+                const response = await fetch('./data/swim-records.json');
                 if (response.ok) {
                     const data = await response.json();
                     records = data.records || [];
                     saveToStorage(); // APIから取得したデータをlocalStorageに保存
+                    console.log(`データ読み込み完了: ${records.length}件のレコード`);
                 } else {
-                    console.error('APIからのデータ取得に失敗しました');
+                    console.error('JSONファイルからのデータ取得に失敗しました');
                     records = [];
                 }
             } catch (error) {
