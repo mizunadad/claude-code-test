@@ -485,12 +485,28 @@
                         </div>
                         <div class="form-group">
                             <label for="rank">順位</label>
-                            <input type="text" id="rank" name="rank" placeholder="例: 1位">
+                            <select id="rank" name="rank" onchange="toggleCustomRank()">
+                                <option value="">選択してください</option>
+                                <option value="1">1位</option>
+                                <option value="2">2位</option>
+                                <option value="3">3位</option>
+                                <option value="4">4位</option>
+                                <option value="5">5位</option>
+                                <option value="6">6位</option>
+                                <option value="7">7位</option>
+                                <option value="8">8位</option>
+                                <option value="9">9位</option>
+                                <option value="10">10位</option>
+                                <option value="custom">その他（手入力）</option>
+                            </select>
+                            <input type="text" id="custom-rank" name="custom-rank" placeholder="順位を入力" style="display: none; margin-top: 5px;">
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="competition">大会名</label>
-                        <input type="text" id="competition" name="competition" placeholder="例: JO(春)">
+                        <select id="competition" name="competition">
+                            <option value="">選択してください</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="memo">メモ</label>
@@ -828,6 +844,13 @@
             e.preventDefault();
             
             const formData = new FormData(e.target);
+            
+            // 順位の値を取得（カスタム入力があればそれを使用）
+            let rankValue = formData.get('rank');
+            if (rankValue === 'custom') {
+                rankValue = formData.get('custom-rank');
+            }
+            
             const record = {
                 id: generateId(),
                 日付: formData.get('date'),
@@ -838,7 +861,7 @@
                 種別: '大会',
                 大会名: formData.get('competition'),
                 レース: '',
-                順位: formData.get('rank'),
+                順位: rankValue,
                 メモ: formData.get('memo'),
                 入力者: 'ユーザー',
                 更新日時: new Date().toISOString()
@@ -849,10 +872,16 @@
             alert('記録が追加されました');
             e.target.reset();
             
+            // カスタム順位入力フィールドを非表示にリセット
+            document.getElementById('custom-rank').style.display = 'none';
+            
             if (currentTab === 'records') {
                 renderRecords();
             }
             updateDashboard();
+            
+            // フィルターも更新
+            populateFilters();
         });
 
         // データエクスポート
@@ -1505,6 +1534,34 @@
                 option.textContent = competition;
                 competitionSelect.appendChild(option);
             });
+
+            // 記録追加フォームの大会名セレクトボックスを初期化
+            const addCompetitionSelect = document.getElementById('competition');
+            // 既存のオプション（「選択してください」以外）をクリア
+            while (addCompetitionSelect.children.length > 1) {
+                addCompetitionSelect.removeChild(addCompetitionSelect.lastChild);
+            }
+            competitions.forEach(competition => {
+                const option = document.createElement('option');
+                option.value = competition;
+                option.textContent = competition;
+                addCompetitionSelect.appendChild(option);
+            });
+        }
+
+        // 順位選択の切り替え機能
+        function toggleCustomRank() {
+            const rankSelect = document.getElementById('rank');
+            const customRankInput = document.getElementById('custom-rank');
+            
+            if (rankSelect.value === 'custom') {
+                customRankInput.style.display = 'block';
+                customRankInput.required = true;
+            } else {
+                customRankInput.style.display = 'none';
+                customRankInput.required = false;
+                customRankInput.value = '';
+            }
         }
 
         // ページ読み込み完了時にフィルターを初期化
