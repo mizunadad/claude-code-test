@@ -720,7 +720,12 @@
             
             const recordsToShow = filteredRecords || records;
             
-            recordsToShow.forEach((record, index) => {
+            // 日付順にソート（新しいものから）
+            const sortedRecords = recordsToShow.sort((a, b) => {
+                return new Date(b.日付) - new Date(a.日付);
+            });
+            
+            sortedRecords.forEach((record, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${record.日付}</td>
