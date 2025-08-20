@@ -9,10 +9,23 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>🏊‍♂️ MinatoSwimRecord - 競泳記録管理アプリ - 🚀FIXED-1415🚀</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <!-- <link rel="manifest" href="manifest.json"> -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏊‍♂️%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏊‍♂️%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
+    <!-- 目標管理機能 -->
+    <script src="./targets/target-manager.js"></script>
+    <script>
+        // Chart.js annotationプラグインを登録
+        Chart.register(ChartjsPluginAnnotation);
+        
+        // 関数を即座にグローバルスコープに配置
+        window.showTab = window.showTab || function(tabName) {
+            console.log('Fallback showTab called with:', tabName);
+        };
+    </script>
     <style>
         * {
             margin: 0;
@@ -329,6 +342,11 @@
                 padding: 8px 4px;
                 font-size: 0.8em;
             }
+            
+            /* モバイル用グラフサイズ調整 */
+            .chart-container div {
+                height: 400px !important;
+            }
         }
 
         @media (max-width: 480px) {
@@ -565,8 +583,16 @@
 
                 <!-- グラフエリア -->
                 <div class="chart-container" style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: none;">
-                    <div style="position: relative; height: 300px; width: 100%;">
+                    <div style="position: relative; height: 500px; width: 100%;">
                         <canvas id="recordChart"></canvas>
+                    </div>
+                    
+                    <!-- 目標基準線凡例 -->
+                    <div id="target-legend" style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <h4 style="margin-bottom: 10px; color: #374151; font-size: 14px;">🎯 目標基準線</h4>
+                        <div id="target-legend-content" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; font-size: 12px;">
+                            <!-- 動的に生成される凡例項目 -->
+                        </div>
                     </div>
                 </div>
 
@@ -629,7 +655,7 @@
             document.getElementById('install-prompt').classList.add('show');
         });
 
-        function installApp() {
+        window.installApp = function() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((choiceResult) => {
@@ -642,16 +668,18 @@
             }
         }
 
-        function hideInstallPrompt() {
+        window.hideInstallPrompt = function() {
             document.getElementById('install-prompt').classList.remove('show');
         }
 
-        // Service Worker 登録
+        // Service Worker 登録（一時的に無効化）
+        /*
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js')
                 .then(registration => console.log('SW registered'))
                 .catch(error => console.log('SW registration failed'));
         }
+        */
 
         // データ管理関数
         async function loadFromStorage() {
@@ -709,8 +737,10 @@
             return String(maxId + 1).padStart(3, '0');
         }
 
-        // タブ切り替え
-        function showTab(tabName) {
+        // タブ切り替え（グローバルスコープに配置）
+        window.showTab = function(tabName) {
+            console.log('Real showTab called with:', tabName);
+            
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
@@ -718,8 +748,20 @@
                 tab.classList.remove('active');
             });
             
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
+            const tabContent = document.getElementById(tabName);
+            if (tabContent) {
+                tabContent.classList.add('active');
+            }
+            
+            // event.targetの代わりに、対応するボタンを直接取得
+            const navButtons = document.querySelectorAll('.nav-tab');
+            navButtons.forEach((button, index) => {
+                const tabNames = ['dashboard', 'records', 'add-record', 'analysis', 'data-manager'];
+                if (tabNames[index] === tabName) {
+                    button.classList.add('active');
+                }
+            });
+            
             currentTab = tabName;
             
             if (tabName === 'records') {
@@ -768,8 +810,8 @@
             });
         }
 
-        // フィルタ機能
-        function filterRecords() {
+        // フィルタ機能（グローバルスコープに配置）
+        window.filterRecords = function() {
             const strokeFilter = document.getElementById('filter-stroke').value;
             const distanceFilter = document.getElementById('filter-distance').value;
             const poolFilter = document.getElementById('filter-pool').value;
@@ -798,19 +840,40 @@
 
         // ダッシュボード更新
         function updateDashboard() {
-            document.getElementById('total-records').textContent = records.length;
+            console.log('updateDashboard called, records:', records.length);
+            
+            const totalRecordsElement = document.getElementById('total-records');
+            const bestTimeElement = document.getElementById('best-time');
+            const competitionsElement = document.getElementById('competitions');
+            const firstPlacesElement = document.getElementById('first-places');
+            
+            if (totalRecordsElement) {
+                totalRecordsElement.textContent = records.length;
+                console.log('Total records set:', records.length);
+            }
             
             const butterflyRecords = records.filter(r => r.種目 === 'バタフライ' && r.距離 === '50');
-            if (butterflyRecords.length > 0) {
+            console.log('Butterfly 50m records:', butterflyRecords.length);
+            
+            if (butterflyRecords.length > 0 && bestTimeElement) {
                 const bestTime = Math.min(...butterflyRecords.map(r => parseFloat(r.タイム)));
-                document.getElementById('best-time').textContent = bestTime.toFixed(2) + 's';
+                bestTimeElement.textContent = bestTime.toFixed(2) + 's';
+                console.log('Best time set:', bestTime);
+            } else if (bestTimeElement) {
+                bestTimeElement.textContent = 'N/A';
             }
             
             const competitions = [...new Set(records.map(r => r.大会名))].filter(c => c);
-            document.getElementById('competitions').textContent = competitions.length;
+            if (competitionsElement) {
+                competitionsElement.textContent = competitions.length;
+                console.log('Competitions count:', competitions.length);
+            }
             
             const firstPlaces = records.filter(r => r.順位 === '1位').length;
-            document.getElementById('first-places').textContent = firstPlaces;
+            if (firstPlacesElement) {
+                firstPlacesElement.textContent = firstPlaces;
+                console.log('First places count:', firstPlaces);
+            }
         }
 
         // 分析画面更新
@@ -914,8 +977,8 @@
             populateFilters();
         });
 
-        // データエクスポート
-        function exportData() {
+        // データエクスポート（グローバルスコープに配置）
+        window.exportData = function() {
             const data = {
                 records: records,
                 metadata: {
@@ -935,8 +998,8 @@
             URL.revokeObjectURL(url);
         }
 
-        // データインポート
-        function importData() {
+        // データインポート（グローバルスコープに配置）
+        window.importData = function() {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = '.json';
@@ -964,8 +1027,8 @@
             input.click();
         }
 
-        // データリセット
-        function resetData() {
+        // データリセット（グローバルスコープに配置）
+        window.resetData = function() {
             if (confirm('全てのデータを初期状態にリセットしますか？この操作は元に戻せません。')) {
                 records = initialData.records;
                 saveToStorage();
@@ -977,11 +1040,33 @@
 
         // 初期化
         document.addEventListener('DOMContentLoaded', async () => {
-            await loadFromStorage();
-            updateDashboard();
+            console.log('DOMContentLoaded started');
             
-            // 今日の日付をデフォルトに設定
-            document.getElementById('date').valueAsDate = new Date();
+            try {
+                await loadFromStorage();
+                console.log('Data loaded, records:', records.length);
+                updateDashboard();
+                console.log('Dashboard updated');
+                
+                // 目標管理システム初期化
+                if (window.targetManager) {
+                    await window.targetManager.initializeTargets();
+                    console.log('目標管理システム初期化完了');
+                } else {
+                    console.log('targetManager not found');
+                }
+                
+                // 今日の日付をデフォルトに設定
+                const dateInput = document.getElementById('date');
+                if (dateInput) {
+                    dateInput.valueAsDate = new Date();
+                    console.log('Date input set');
+                }
+                
+                console.log('Initialization complete');
+            } catch (error) {
+                console.error('Initialization error:', error);
+            }
         });
 
         // Service Worker無効化（キャッシュ問題解決のため）
@@ -1033,8 +1118,8 @@
             }
         }
 
-        // キャッシュクリア関数
-        function clearCache() {
+        // キャッシュクリア関数（グローバルスコープに配置）
+        window.clearCache = function() {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.getRegistrations().then(function(registrations) {
                     for(let registration of registrations) {
@@ -1054,8 +1139,8 @@
             alert('キャッシュをクリアしました。ページを再読み込みしてください。');
         }
 
-        // デバッグ・テスト関数
-        function testChart() {
+        // デバッグ・テスト関数（グローバルスコープに配置）
+        window.testChart = function() {
             const debugDiv = document.getElementById('debug-info');
             const debugContent = document.getElementById('debug-content');
             debugDiv.style.display = 'block';
@@ -1131,8 +1216,116 @@
             debugContent.innerHTML = debug;
         }
 
-        // グラフ更新関数
-        function updateChart() {
+        // 目標基準線をChart.jsデータセットとして取得
+        async function getTargetLinesForChart(stroke, distance, poolType, existingRecords) {
+            try {
+                if (!window.targetManager) {
+                    return [];
+                }
+                
+                const targetLines = window.targetManager.getTargetLines(stroke, distance, poolType);
+                
+                if (!targetLines || targetLines.length === 0) {
+                    return [];
+                }
+                
+                // 既存の記録データから日付範囲を取得
+                let minDate = '2020-01-01';
+                let maxDate = '2030-12-31';
+                
+                if (existingRecords && existingRecords.length > 0) {
+                    const dates = existingRecords.map(r => new Date(r.日付)).sort((a, b) => a - b);
+                    minDate = new Date(dates[0].getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 30日前
+                    maxDate = new Date(dates[dates.length - 1].getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 30日後
+                }
+                
+                console.log('Target line date range:', { minDate, maxDate });
+                
+                // 各目標基準線を水平線データセットとして作成
+                const targetDatasets = targetLines.map((target, index) => {
+                    // グラフの全幅にわたる水平線データ
+                    const horizontalLineData = [
+                        { x: minDate, y: target.time },
+                        { x: maxDate, y: target.time }
+                    ];
+                    
+                    const dataset = {
+                        label: `${target.label} (${target.time}s)`,
+                        data: horizontalLineData,
+                        type: 'line',
+                        borderColor: target.color,
+                        backgroundColor: 'transparent',
+                        borderWidth: target.style.width,
+                        borderDash: target.style.lineStyle === 'dashed' ? [8, 4] : 
+                                   target.style.lineStyle === 'dotted' ? [3, 3] : [],
+                        fill: false,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                        tension: 0,
+                        showLine: true,
+                        order: -1, // 目標線を前面に表示
+                        yAxisID: 'y', // Y軸を明示的に指定
+                        isTargetLine: true // 目標線の識別用
+                    };
+                    
+                    console.log(`Target dataset ${index}:`, dataset);
+                    return dataset;
+                });
+                
+                console.log('Target datasets created:', targetDatasets.length);
+                return targetDatasets;
+                
+            } catch (error) {
+                console.error('目標基準線データセット作成エラー:', error);
+                return [];
+            }
+        }
+        
+        // 目標基準線の凡例を作成
+        async function createTargetLegend(stroke, distance, poolType) {
+            try {
+                if (!window.targetManager) {
+                    return;
+                }
+                
+                const targetLines = window.targetManager.getTargetLines(stroke, distance, poolType);
+                const legendContent = document.getElementById('target-legend-content');
+                
+                if (!targetLines || targetLines.length === 0) {
+                    legendContent.innerHTML = '<div style="color: #6b7280;">目標データがありません</div>';
+                    return;
+                }
+                
+                legendContent.innerHTML = '';
+                
+                targetLines.forEach(target => {
+                    const legendItem = document.createElement('div');
+                    legendItem.style.cssText = 'display: flex; align-items: center; padding: 4px;';
+                    
+                    // 線のスタイルを表現するSVG
+                    const lineStyle = target.style.lineStyle === 'dashed' ? 'stroke-dasharray="8,4"' : 
+                                    target.style.lineStyle === 'dotted' ? 'stroke-dasharray="3,3"' : '';
+                    
+                    legendItem.innerHTML = `
+                        <svg width="30" height="12" style="margin-right: 8px;">
+                            <line x1="0" y1="6" x2="30" y2="6" 
+                                  stroke="${target.color}" 
+                                  stroke-width="${target.style.width}" 
+                                  ${lineStyle} />
+                        </svg>
+                        <span style="color: #374151; font-weight: 500;">${target.label}: ${target.time}s</span>
+                    `;
+                    
+                    legendContent.appendChild(legendItem);
+                });
+                
+            } catch (error) {
+                console.error('凡例作成エラー:', error);
+            }
+        }
+
+        // グラフ更新関数（グローバルスコープに配置）
+        window.updateChart = async function() {
             try {
                 // まず応援メッセージとグラフをクリア
                 document.querySelector('.chart-container').style.display = 'none';
@@ -1229,10 +1422,27 @@
                     });
                 }
 
+                // 目標基準線をデータセットとして追加
+                const targetLines = await getTargetLinesForChart(stroke, distance, pool, filteredRecords);
+                datasets.push(...targetLines);
+                
+                console.log('Final datasets count:', datasets.length);
+                console.log('Target datasets:', targetLines.length);
+                console.log('All datasets details:');
+                datasets.forEach((dataset, index) => {
+                    console.log(`  Dataset ${index}: ${dataset.label}, points: ${dataset.data?.length || 0}, type: ${dataset.type || 'line'}`);
+                    if (dataset.data && dataset.data.length > 0) {
+                        console.log(`    Sample data:`, dataset.data.slice(0, 2));
+                    }
+                });
+                
                 // グラフ作成
                 const success = createChart(datasets);
                 
                 if (success) {
+                    // 目標基準線の凡例を作成
+                    createTargetLegend(stroke, distance, pool);
+
                     // アドバイス生成
                     generateAdvice(stroke, distance, pool, filteredRecords);
 
@@ -1296,46 +1506,43 @@
                 const ctx = canvas.getContext('2d');
                 console.log('Canvas準備完了');
 
-                // データセットを単純な形式に変換
-                const labels = [];
-                const processedDatasets = [];
+                // Chart.js time軸に対応するデータセット処理
+                console.log('Input datasets for Chart.js:', datasets);
                 
-                datasets.forEach(dataset => {
-                    const processedData = dataset.data.map(point => {
-                        const date = new Date(point.x);
-                        const label = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-                        if (!labels.includes(label)) {
-                            labels.push(label);
-                        }
-                        return {
-                            label: label,
-                            value: point.y
-                        };
-                    });
+                const processedDatasets = datasets.map(dataset => {
+                    console.log('Processing dataset:', dataset.label, 'data points:', dataset.data.length);
                     
-                    processedDatasets.push({
+                    // time軸用のデータ形式に変換
+                    const processedData = dataset.data.map(point => ({
+                        x: point.x, // 日付文字列またはDateオブジェクト
+                        y: point.y  // タイム値
+                    }));
+                    
+                    console.log('Processed data points:', processedData);
+                    
+                    return {
                         ...dataset,
-                        processedData: processedData
+                        data: processedData
+                    };
+                });
+                
+                console.log('Final processed datasets for Chart.js creation:');
+                processedDatasets.forEach((dataset, index) => {
+                    console.log(`  Chart Dataset ${index}:`, {
+                        label: dataset.label,
+                        type: dataset.type,
+                        dataPoints: dataset.data.length,
+                        borderColor: dataset.borderColor,
+                        borderWidth: dataset.borderWidth,
+                        borderDash: dataset.borderDash,
+                        sampleData: dataset.data.slice(0, 2)
                     });
                 });
                 
-                // ラベルをソート
-                const sortedLabels = labels.sort((a, b) => new Date(a) - new Date(b));
-                
-                // 各データセットを整理
-                const finalDatasets = processedDatasets.map(dataset => ({
-                    ...dataset,
-                    data: sortedLabels.map(label => {
-                        const dataPoint = dataset.processedData.find(p => p.label === label);
-                        return dataPoint ? dataPoint.value : null;
-                    })
-                }));
-
                 recordChart = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: sortedLabels,
-                        datasets: finalDatasets
+                        datasets: processedDatasets
                     },
                     options: {
                         responsive: true,
@@ -1346,11 +1553,35 @@
                                 text: '記録推移グラフ'
                             },
                             legend: {
-                                display: true
+                                display: true,
+                                labels: {
+                                    filter: function(legendItem, chartData) {
+                                        // 目標線を凡例から除外
+                                        console.log('Legend filter called:', legendItem.text);
+                                        const isTarget = legendItem.text.includes('全中') || 
+                                                       legendItem.text.includes('JO') ||
+                                                       legendItem.text.includes('優勝') ||
+                                                       legendItem.text.includes('決勝') ||
+                                                       legendItem.text.includes('標準');
+                                        console.log('Is target line:', isTarget);
+                                        return !isTarget;
+                                    }
+                                }
+                            },
+                            annotation: {
+                                annotations: {}
                             }
                         },
                         scales: {
                             x: {
+                                type: 'time',
+                                time: {
+                                    parser: 'yyyy-MM-dd',
+                                    displayFormats: {
+                                        day: 'MM/dd',
+                                        month: 'yyyy/MM'
+                                    }
+                                },
                                 title: {
                                     display: true,
                                     text: '日付'
@@ -1460,6 +1691,87 @@
             return { trend, message, detail };
         }
 
+        // 目標基準線との比較分析
+        function analyzeTargetComparison(stroke, distance, pool, bestTime) {
+            if (!window.targetManager) {
+                return { hasTarget: false };
+            }
+
+            const targetLines = window.targetManager.getTargetLines(stroke, distance, pool);
+            if (!targetLines || targetLines.length === 0) {
+                return { hasTarget: false };
+            }
+
+            // 目標をタイム順にソート（速い順）
+            const sortedTargets = targetLines.sort((a, b) => a.time - b.time);
+            
+            let nextTarget = null;
+            let achievedTargets = [];
+            
+            // 達成済み目標と次の目標を判定
+            for (const target of sortedTargets) {
+                if (bestTime <= target.time) {
+                    achievedTargets.push(target);
+                } else if (!nextTarget) {
+                    nextTarget = target;
+                }
+            }
+            
+            return {
+                hasTarget: true,
+                nextTarget: nextTarget,
+                achievedTargets: achievedTargets,
+                allTargets: sortedTargets,
+                bestTime: bestTime
+            };
+        }
+
+        // 目標基準線に基づく励ましメッセージ生成
+        function generateTargetMotivationMessage(targetAnalysis) {
+            const { nextTarget, achievedTargets, bestTime } = targetAnalysis;
+            
+            let message = '';
+            
+            // 達成済みの目標がある場合
+            if (achievedTargets.length > 0) {
+                const topAchievement = achievedTargets[0]; // 最も早い達成済み目標
+                message += `<p style="color: #059669; font-weight: 600;">🏆 ${topAchievement.label} 達成済み！素晴らしい実力です！</p>`;
+            }
+            
+            // 次の目標がある場合
+            if (nextTarget) {
+                const timeGap = nextTarget.time - bestTime;
+                const timeGapStr = timeGap.toFixed(2);
+                
+                message += `<p style="color: #0891b2; font-weight: 600;">🎯 次の目標: ${nextTarget.label}</p>`;
+                message += `<p style="color: #374151; font-size: 0.9em;">あと${timeGapStr}秒の短縮で達成です！</p>`;
+                
+                // 目標レベル別の具体的な励ましメッセージ
+                if (nextTarget.label.includes('標準')) {
+                    message += `<p style="color: #16a34a; font-size: 0.85em;">💪 標準記録突破まであと少し！基礎練習を大切に、一歩一歩進んでいこう！</p>`;
+                } else if (nextTarget.label.includes('決勝')) {
+                    message += `<p style="color: #dc2626; font-size: 0.85em;">🔥 決勝進出レベル！ここからが本当の勝負。細かい技術の向上を目指そう！</p>`;
+                } else if (nextTarget.label.includes('優勝')) {
+                    message += `<p style="color: #7c2d12; font-size: 0.85em;">👑 優勝レベル！トップ選手の仲間入り。さらなる高みを目指して挑戦し続けよう！</p>`;
+                }
+                
+                // 時間差に基づく具体的なアドバイス
+                if (timeGap <= 1.0) {
+                    message += `<p style="color: #ea580c; font-size: 0.8em;">🚀 あと1秒以内！スタートやターンの技術向上で達成可能です！</p>`;
+                } else if (timeGap <= 3.0) {
+                    message += `<p style="color: #0369a1; font-size: 0.8em;">⚡ あと数秒！フォーム改善とペース配分で必ず届きます！</p>`;
+                } else {
+                    message += `<p style="color: #059669; font-size: 0.8em;">📈 継続的な練習で確実に向上しています。目標達成まで一緒に頑張ろう！</p>`;
+                }
+            } else {
+                // 全ての目標を達成済みの場合
+                message += `<p style="color: #dc2626; font-weight: 600;">🌟 全ての目標基準をクリア！トップレベルの実力です！</p>`;
+                message += `<p style="color: #374151; font-size: 0.9em;">さらなる自己ベスト更新を目指して、限界に挑戦し続けよう！</p>`;
+            }
+            
+            return message;
+        }
+
         function generateAdvice(stroke, distance, pool, records) {
             if (records.length === 0) return;
 
@@ -1470,6 +1782,9 @@
 
             // 最近の記録分析
             const recentAnalysis = analyzeRecentRecords(records);
+            
+            // 目標基準線との比較分析
+            const targetAnalysis = analyzeTargetComparison(stroke, distance, pool, bestTime);
 
             let advice = `<div style="line-height: 1.6;">`;
             
@@ -1514,6 +1829,16 @@
             advice += `<p><strong>🔍 最近の記録分析</strong></p>`;
             advice += `<p style="color: #1e40af; font-weight: 600;">${recentAnalysis.message}</p>`;
             advice += `<p style="color: #374151; font-size: 0.95em;">${recentAnalysis.detail}</p>`;
+            
+            // 目標基準線に関する励ましメッセージ
+            if (targetAnalysis.hasTarget) {
+                const targetMessage = generateTargetMotivationMessage(targetAnalysis);
+                if (targetMessage) {
+                    advice += `<div style="margin-top: 12px; padding: 10px; background: rgba(16, 185, 129, 0.1); border-radius: 6px; border-left: 3px solid #10b981;">`;
+                    advice += targetMessage;
+                    advice += `</div>`;
+                }
+            }
             
             // 記録数に応じた追加メッセージ
             if (records.length >= 10) {
@@ -1579,8 +1904,8 @@
             });
         }
 
-        // 順位選択の切り替え機能
-        function toggleCustomRank() {
+        // 順位選択の切り替え機能（グローバルスコープに配置）
+        window.toggleCustomRank = function() {
             const rankSelect = document.getElementById('rank');
             const customRankInput = document.getElementById('custom-rank');
             

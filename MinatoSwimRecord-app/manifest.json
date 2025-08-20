@@ -12,9 +12,9 @@
   "categories": ["sports", "productivity", "health"],
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%232563eb'/%3E%3Ctext x='96' y='120' font-size='100' text-anchor='middle' fill='white'%3E🏊‍♂️%3C/text%3E%3C/svg%3E",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ],
@@ -26,8 +26,9 @@
       "url": "/?tab=add-record",
       "icons": [
         {
-          "src": "icon-192.png",
-          "sizes": "192x192"
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%232563eb'/%3E%3Ctext x='96' y='120' font-size='100' text-anchor='middle' fill='white'%3E🏊‍♂️%3C/text%3E%3C/svg%3E",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
         }
       ]
     },
@@ -38,8 +39,9 @@
       "url": "/?tab=records",
       "icons": [
         {
-          "src": "icon-192.png",
-          "sizes": "192x192"
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%232563eb'/%3E%3Ctext x='96' y='120' font-size='100' text-anchor='middle' fill='white'%3E🏊‍♂️%3C/text%3E%3C/svg%3E",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
         }
       ]
     },
@@ -50,24 +52,11 @@
       "url": "/?tab=analysis",
       "icons": [
         {
-          "src": "icon-192.png",
-          "sizes": "192x192"
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%232563eb'/%3E%3Ctext x='96' y='120' font-size='100' text-anchor='middle' fill='white'%3E🏊‍♂️%3C/text%3E%3C/svg%3E",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
         }
       ]
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "screenshot-desktop.png",
-      "sizes": "1280x800",
-      "type": "image/png",
-      "form_factor": "wide"
-    },
-    {
-      "src": "screenshot-mobile.png",
-      "sizes": "750x1334",
-      "type": "image/png",
-      "form_factor": "narrow"
     }
   ]
 }

@@ -1,0 +1,278 @@
+# 🏊‍♂️ 競泳目標値ハイブリッド実装プロンプト
+
+## 📋 **実装要求**
+
+既存の競泳アプリに、**ファイル競合を完全回避**しながら目標基準線機能を追加してください。
+
+### 🗂️ **新規作成ディレクトリ構造**
+```
+現在の構造：
+.
+├── data/              # 既存（触らない）
+└── node_modules/      # 既存
+
+追加する構造：
+.
+├── data/              # 既存（変更なし）
+├── node_modules/      # 既存
+└── targets/           # 🆕 新規作成
+    ├── swimming_targets.csv
+    └── README.md
+```
+
+## 🔧 **Phase 1: 目標データ抽出（Claude Code）**
+
+以下のサイトから最新の競泳目標タイムを抽出して、新規CSVファイルを作成してください：
+
+### **データソース**
+- https://ja.wikipedia.org/wiki/競泳の日本中学記録一覧
+- https://ja.wikipedia.org/wiki/全国JOCジュニアオリンピックカップ水泳競技大会記録  
+- https://swim.seiko.co.jp/（最新大会データ）
+
+### **CSVファイル生成**
+**ファイル名**: `targets/swimming_targets.csv`
+
+**データ構造**:
+```csv
+age,event,distance,pool_type,meet,level,time_seconds,time_display,last_updated
+13,freestyle,50,short,zenchu,champion,23.50,23.50,2024-08-17
+13,freestyle,50,short,zenchu,final,24.20,24.20,2024-08-17
+13,freestyle,50,short,zenchu,standard,25.20,25.20,2024-08-17
+13,freestyle,50,long,zenchu,champion,24.00,24.00,2024-08-17
+13,freestyle,100,short,zenchu,champion,50.80,50.80,2024-08-17
+13,butterfly,50,short,jo_summer,champion,24.80,24.80,2024-08-22
+13,butterfly,100,short,jo_summer,champion,55.80,55.80,2024-08-22
+13,butterfly,200,short,jo_spring,champion,135.00,2:15.00,2024-03-28
+14,freestyle,50,short,zenchu,champion,23.20,23.20,2024-08-17
+15,freestyle,50,short,zenchu,champion,22.90,22.90,2024-08-17
+```
+
+**対象範囲**:
+- **年齢**: 13歳、14歳、15歳
+- **種目**: freestyle, butterfly  
+- **距離**: 50, 100, 200
+- **プール**: short(25m), long(50m)
+- **大会**: zenchu(全中), jo_summer(JO夏), jo_spring(JO春)
+- **レベル**: champion(優勝), final(決勝), standard(標準記録)
+
+---
+
+## 🚀 **Phase 2: アプリ機能追加（既存ファイル非破壊）**
+
+### **新規ファイル作成: `target-manager.js`**
+
+```javascript
+// targets/target-manager.js
+class TargetManager {
+  constructor() {
+    this.birthDate = "2012-09-04"; // YYYY-MM-DD
+    this.fallbackData = this.getFallbackTargets();
+    this.targetData = null;
+  }
+
+  // オフライン用フォールバックデータ
+  getFallbackTargets() {
+    return {
+      13: {
+        freestyle: {
+          50: {
+            short: { zenchu: {champion: 23.50, final: 24.20, standard: 25.20} },
+            long: { zenchu: {champion: 24.00, final: 24.70, standard: 25.70} }
+          },
+          100: {
+            short: { zenchu: {champion: 50.80, final: 53.00, standard: 55.50} },
+            long: { zenchu: {champion: 52.00, final: 54.50, standard: 57.00} }
+          }
+        },
+        butterfly: {
+          50: {
+            short: { zenchu: {champion: 25.20, final: 26.50, standard: 28.00} },
+            long: { zenchu: {champion: 25.70, final: 27.00, standard: 28.50} }
+          },
+          100: {
+            short: { zenchu: {champion: 56.50, final: 59.00, standard: 62.00} },
+            long: { zenchu: {champion: 58.00, final: 60.50, standard: 63.50} }
+          }
+        }
+      },
+      14: { /* 14歳データ */ },
+      15: { /* 15歳データ */ }
+    };
+  }
+
+  // 年齢計算
+  calculateAge() {
+    const today = new Date();
+    const birth = new Date(this.birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  }
+
+  // CSVデータ読み込み（ハイブリッド方式）
+  async initializeTargets() {
+    try {
+      console.log('最新目標データを読み込み中...');
+      const response = await fetch('./targets/swimming_targets.csv');
+      const csvText = await response.text();
+      this.targetData = this.parseCSV(csvText);
+      console.log('最新データ読み込み成功');
+      return this.targetData;
+    } catch (error) {
+      console.log('最新データ取得失敗、フォールバックデータ使用:', error);
+      this.targetData = this.fallbackData;
+      return this.fallbackData;
+    }
+  }
+
+  // CSV解析
+  parseCSV(csvText) {
+    const lines = csvText.split('\n');
+    const headers = lines[0].split(',');
+    const data = {};
+    
+    for (let i = 1; i < lines.length; i++) {
+      if (lines[i].trim()) {
+        const values = lines[i].split(',');
+        const row = {};
+        headers.forEach((header, index) => {
+          row[header.trim()] = values[index]?.trim();
+        });
+        
+        // データ構造化
+        const age = parseInt(row.age);
+        if (!data[age]) data[age] = {};
+        // 以下、階層構造作成...
+      }
+    }
+    return data;
+  }
+
+  // 目標基準線取得
+  getTargetLines(event, distance, poolType) {
+    const currentAge = this.calculateAge();
+    const ageData = this.targetData?.[currentAge] || this.fallbackData[currentAge];
+    
+    if (!ageData?.[event]?.[distance]?.[poolType]) {
+      return [];
+    }
+
+    const targets = [];
+    const eventData = ageData[event][distance][poolType];
+    
+    Object.entries(eventData).forEach(([meet, levels]) => {
+      Object.entries(levels).forEach(([level, time]) => {
+        targets.push({
+          meet,
+          level, 
+          time: parseFloat(time),
+          label: `${meet}_${level}`,
+          color: this.getLineColor(meet, level),
+          style: this.getLineStyle(level)
+        });
+      });
+    });
+
+    return targets;
+  }
+
+  // 線の色とスタイル
+  getLineColor(meet, level) {
+    const meetColors = {
+      zenchu: '#FF6B6B',
+      jo_summer: '#4ECDC4', 
+      jo_spring: '#45B7D1'
+    };
+    return meetColors[meet] || '#999999';
+  }
+
+  getLineStyle(level) {
+    const styles = {
+      champion: { lineStyle: 'solid', width: 2, opacity: 0.8 },
+      final: { lineStyle: 'dashed', width: 1.5, opacity: 0.7 },
+      standard: { lineStyle: 'dotted', width: 1, opacity: 0.6 }
+    };
+    return styles[level] || styles.standard;
+  }
+}
+
+// グローバルインスタンス
+window.targetManager = new TargetManager();
+```
+
+### **既存HTMLファイルへの追加**
+
+既存の `index.html` の `<head>` セクションに以下を追加:
+
+```html
+<!-- 目標管理機能 -->
+<script src="./targets/target-manager.js"></script>
+```
+
+### **既存JSファイルへの統合**
+
+既存のグラフ描画関数に以下を追加（既存コードは変更しない）:
+
+```javascript
+// 既存のグラフ初期化後に追加
+async function addTargetLines() {
+  // 目標データ初期化
+  await window.targetManager.initializeTargets();
+  
+  // 現在選択中の種目・距離・プール情報取得
+  const selectedEvent = getCurrentEvent();     // 既存関数
+  const selectedDistance = getCurrentDistance(); // 既存関数  
+  const selectedPool = getCurrentPool();       // 既存関数
+  
+  // 目標基準線取得
+  const targetLines = window.targetManager.getTargetLines(
+    selectedEvent, 
+    selectedDistance, 
+    selectedPool
+  );
+  
+  // グラフに基準線追加
+  targetLines.forEach(target => {
+    addHorizontalLineToChart(chart, {
+      value: target.time,
+      label: target.label,
+      color: target.color,
+      style: target.style
+    });
+  });
+}
+
+// 種目・プール変更時のイベントリスナーに追加
+document.getElementById('event-selector').addEventListener('change', () => {
+  updateChart(); // 既存関数
+  addTargetLines(); // 新規追加
+});
+```
+
+## 📦 **最終ファイル構成**
+
+```
+.
+├── data/                    # 既存（変更なし）
+├── node_modules/            # 既存
+├── targets/                 # 🆕 新規作成
+│   ├── swimming_targets.csv # 🆕 目標データ
+│   ├── target-manager.js    # 🆕 管理クラス
+│   └── README.md           # 🆕 更新手順
+├── index.html              # 🔧 <script>タグ1行追加のみ
+└── [既存ファイル群]         # 🛡️ 既存コード保持
+```
+
+## ✅ **安全性確認**
+
+- ✅ 既存ディレクトリに一切触らない
+- ✅ 既存ファイルの上書きなし
+- ✅ オフライン動作保証（フォールバック）
+- ✅ 年齢自動計算（誕生日対応）
+- ✅ 段階的実装可能
+
+この実装で、**既存機能を一切破壊せず**に目標基準線機能を追加できます！

@@ -1,0 +1,10 @@
+# Step 1: プロジェクトディレクトリに移動
+cd /home/mizun/claude_project/claude-code-test/MinatoSwimRecord-app
+# Step 2: 構造確認（いずれか実行）
+tree -a -h -L 4                    # 推奨：4階層まで詳細表示
+# または
+#find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g' | head -30
+
+# Step 3: 重要ファイル特定
+find . -name "*.js" -o -name "*.html" -o -name "*.css" -o -name "*.json"
+
