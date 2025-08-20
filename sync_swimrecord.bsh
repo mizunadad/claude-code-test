@@ -1,0 +1,129 @@
+#!/bin/bash
+# 水泳記録アプリ安全同期スクリプト
+# 使用方法: ./sync_swimrecord.bsh
+
+echo "🏊‍♂️ SwimRecord安全同期開始"
+echo "================================"
+
+# 現在のディレクトリと時刻表示
+echo "📁 作業ディレクトリ: $(pwd)"
+echo "🕒 実行時刻: $(date '+%Y-%m-%d %H:%M:%S')"
+
+# ================================================
+# 💬 コミットメッセージを設定してください
+# ================================================
+COMMIT_MESSAGE="update swim record app with target baseline system"
+
+echo ""
+echo "💬 コミットメッセージ: $COMMIT_MESSAGE"
+echo ""
+
+# Gitリポジトリ確認
+if [ ! -d .git ]; then
+    echo "❌ エラー: Gitリポジトリではありません"
+    echo "   claude-code-testディレクトリで実行してください"
+    exit 1
+fi
+
+# リモートの変更を確認
+echo "🔍 リモートの状態を確認中..."
+git fetch origin
+
+# リモートとローカルの差分確認
+REMOTE_AHEAD=$(git rev-list HEAD..origin/main --count 2>/dev/null || echo "0")
+LOCAL_AHEAD=$(git rev-list origin/main..HEAD --count 2>/dev/null || echo "0")
+
+echo "📊 同期状況:"
+echo "   リモートの新しいコミット: $REMOTE_AHEAD"
+echo "   ローカルの新しいコミット: $LOCAL_AHEAD"
+
+# リモートに新しい変更がある場合、プルを実行
+if [ "$REMOTE_AHEAD" -gt 0 ]; then
+    echo ""
+    echo "⬇️ リモートから変更を取得中..."
+    echo "🔀 マージ戦略: リベースを使用"
+    
+    # プル設定を一時的に設定してリベース
+    if ! git pull --rebase origin main; then
+        echo "❌ git pull --rebase に失敗しました"
+        echo "💡 競合が発生している可能性があります"
+        echo ""
+        echo "手動解決方法:"
+        echo "1. git status で競合ファイルを確認"
+        echo "2. 競合ファイルを編集"
+        echo "3. git add <競合ファイル>"
+        echo "4. git rebase --continue"
+        echo "5. 再度このスクリプトを実行"
+        exit 1
+    fi
+    echo "✅ リモートの変更を正常に取得しました（リベース完了）"
+fi
+
+# 変更されたファイルを確認
+echo ""
+echo "📋 変更されたファイル:"
+GIT_STATUS=$(git status --porcelain)
+
+if [ -z "$GIT_STATUS" ]; then
+    echo "⚠️  変更がありません。同期をスキップします。"
+    exit 0
+fi
+
+git status --short
+
+echo ""
+echo -n "🔄 同期を実行しますか? (y/N): "
+read -r CONFIRM
+
+if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+    echo "❌ 同期をキャンセルしました"
+    exit 0
+fi
+
+echo ""
+echo "⏳ Git操作を実行中..."
+
+# Git操作実行
+echo "1️⃣ ファイルをステージング..."
+if ! git add .; then
+    echo "❌ git add に失敗しました"
+    exit 1
+fi
+
+echo "2️⃣ コミット作成..."
+if ! git commit -m "$COMMIT_MESSAGE
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"; then
+    echo "❌ git commit に失敗しました（変更がない可能性があります）"
+    exit 1
+fi
+
+echo "3️⃣ GitHubにプッシュ..."
+if ! git push origin main; then
+    echo "❌ git push に失敗しました"
+    echo "💡 再度 git pull を試してから実行してください"
+    exit 1
+fi
+
+echo ""
+echo "✅ 同期完了！"
+
+# リポジトリ情報取得
+REPO_URL=$(git remote get-url origin)
+USERNAME=$(echo "$REPO_URL" | sed 's/.*github\.com[\/:]//g' | sed 's/\/.*//g')
+REPO_NAME=$(echo "$REPO_URL" | sed 's/.*\///g' | sed 's/\.git//g')
+
+echo ""
+echo "🏊‍♂️ 水泳記録アプリURL:"
+echo "   https://$USERNAME.github.io/$REPO_NAME/MinatoSwimRecord-app/"
+
+echo ""
+echo "📊 リポジトリ:"
+echo "   https://github.com/$USERNAME/$REPO_NAME"
+echo "🔄 更新状況: https://github.com/$USERNAME/$REPO_NAME/actions"
+echo ""
+echo "⏰ GitHub Pagesの更新まで約5分お待ちください"
+echo "🎉 Happy Swimming! 🏊‍♂️"
+echo "================================"
